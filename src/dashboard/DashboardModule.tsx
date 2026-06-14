@@ -11,24 +11,34 @@ import {
   Legend,
   Cell,
 } from 'recharts'
-import type { Area, Bloque } from '../types/database'
+import type { Area, Bloque, EstadoRag, Iniciativa } from '../types/database'
 import { mondayISO, addDays } from '../lib/date'
 import { TECHO_HORAS } from '../lib/metricas'
 import {
   type SemanaSerie,
   type AreaBalance,
+  type IniciativaBalance,
   serieSemanal,
   balanceAreas,
+  tiempoPorIniciativa,
+  tallyRag,
 } from '../lib/dashboard'
 import { listBloquesDesde } from '../data/bloques'
 import { listAreas } from '../data/areas'
-import { listTareaAreas } from '../data/tareas'
+import { listIniciativas } from '../data/iniciativas'
+import { listTareaAreas, listTareaIniciativas } from '../data/tareas'
 
 const TINTA = '#181818'
 const ROJO = '#FB4D3D'
 const TEAL = '#2AA9B5'
 const MANILA = '#C77D3A'
 const SEMANAS = 8
+
+const RAG_COLOR: Record<EstadoRag, string> = {
+  rojo: '#FB4D3D',
+  ambar: '#FFC53D',
+  verde: '#2ECC71',
+}
 
 const ejeTick = { fontSize: 11, fill: TINTA, fontFamily: "'IBM Plex Mono', monospace" }
 const tooltipStyle = {
@@ -53,6 +63,8 @@ function Tarjeta({ titulo, children }: { titulo: string; children: React.ReactNo
 export function DashboardModule() {
   const [serie, setSerie] = useState<SemanaSerie[]>([])
   const [balance, setBalance] = useState<AreaBalance[]>([])
+  const [iniBalance, setIniBalance] = useState<IniciativaBalance[]>([])
+  const [rag, setRag] = useState<Record<EstadoRag, number>>({ rojo: 0, ambar: 0, verde: 0 })
   const [hayDatos, setHayDatos] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -62,13 +74,26 @@ export function DashboardModule() {
     setError(null)
     try {
       const desde = addDays(mondayISO(), -7 * (SEMANAS - 1))
-      const [bloques, areas, tareaAreas]: [Bloque[], Area[], { tarea_id: string; area_id: string }[]] =
-        await Promise.all([listBloquesDesde(desde), listAreas(), listTareaAreas()])
-      setHayDatos(bloques.length > 0)
+      const [bloques, areas, tareaAreas, iniciativas, tareaIni]: [
+        Bloque[],
+        Area[],
+        { tarea_id: string; area_id: string }[],
+        Iniciativa[],
+        { id: string; iniciativa_id: string | null }[],
+      ] = await Promise.all([
+        listBloquesDesde(desde),
+        listAreas(),
+        listTareaAreas(),
+        listIniciativas(),
+        listTareaIniciativas(),
+      ])
+      setHayDatos(bloques.length > 0 || iniciativas.length > 0)
       setSerie(serieSemanal(bloques, SEMANAS))
       const ultimas4 = addDays(mondayISO(), -21)
       const recientes = bloques.filter((b) => b.inicio >= ultimas4)
       setBalance(balanceAreas(recientes, areas, tareaAreas))
+      setIniBalance(tiempoPorIniciativa(recientes, iniciativas, tareaIni))
+      setRag(tallyRag(iniciativas))
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No pude cargar el panel.')
     } finally {
@@ -156,6 +181,62 @@ export function DashboardModule() {
                   <Bar dataKey="horas" radius={[0, 3, 3, 0]}>
                     {balance.map((b) => (
                       <Cell key={b.nombre} fill={b.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </Tarjeta>
+
+          <Tarjeta titulo="Iniciativas · estado RAG">
+            <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+              {(['rojo', 'ambar', 'verde'] as EstadoRag[]).map((r) => (
+                <span
+                  key={r}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    padding: '0.3rem 0.6rem',
+                    border: 'var(--borde)',
+                    borderRadius: 'var(--radio)',
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 14,
+                      height: 14,
+                      borderRadius: 3,
+                      border: '2px solid var(--tinta)',
+                      background: RAG_COLOR[r],
+                    }}
+                  />
+                  <strong>{rag[r]}</strong>
+                </span>
+              ))}
+            </div>
+          </Tarjeta>
+
+          <Tarjeta titulo="Tiempo por iniciativa · últimas 4 semanas">
+            {iniBalance.length === 0 ? (
+              <p className="mono-tag" style={{ opacity: 0.7 }}>
+                Sin bloques vinculados a iniciativas en este período. Asigna una
+                iniciativa a tus tareas para verlo aquí.
+              </p>
+            ) : (
+              <ResponsiveContainer width="100%" height={Math.max(140, iniBalance.length * 42)}>
+                <BarChart
+                  data={iniBalance}
+                  layout="vertical"
+                  margin={{ top: 4, right: 12, left: 8, bottom: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#D8D5C9" horizontal={false} />
+                  <XAxis type="number" tick={ejeTick} stroke={TINTA} />
+                  <YAxis type="category" dataKey="nombre" tick={ejeTick} stroke={TINTA} width={84} />
+                  <Tooltip contentStyle={tooltipStyle} formatter={(v) => [`${v} h`, 'Tiempo']} />
+                  <Bar dataKey="horas" radius={[0, 3, 3, 0]}>
+                    {iniBalance.map((b) => (
+                      <Cell key={b.nombre} fill={RAG_COLOR[b.rag]} />
                     ))}
                   </Bar>
                 </BarChart>

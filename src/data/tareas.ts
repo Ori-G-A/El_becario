@@ -29,6 +29,15 @@ async function fetchAreaMap(tareaIds: string[]): Promise<Map<string, string[]>> 
   return map
 }
 
+/** Mapa liviano tarea→iniciativa (para el dashboard). */
+export async function listTareaIniciativas(): Promise<
+  { id: string; iniciativa_id: string | null }[]
+> {
+  const { data, error } = await supabase.from('tarea').select('id, iniciativa_id')
+  if (error) throw new Error(error.message)
+  return data ?? []
+}
+
 /** Todos los vínculos tarea↔área del usuario (para el dashboard). */
 export async function listTareaAreas(): Promise<{ tarea_id: string; area_id: string }[]> {
   const { data, error } = await supabase.from('tarea_area').select('tarea_id, area_id')

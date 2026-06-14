@@ -1,4 +1,4 @@
-import type { Area, Bloque } from '../types/database'
+import type { Area, Bloque, EstadoRag, Iniciativa } from '../types/database'
 import { calcularMetricas, duracionMin } from './metricas'
 import { addDays, fechaLocalDeISO, mondayISO } from './date'
 
@@ -80,4 +80,43 @@ export function balanceAreas(
     res.push({ nombre: 'Sin área', color: '#9A978C', horas: +(sinArea / 60).toFixed(1) })
   }
   return res
+}
+
+export interface IniciativaBalance {
+  nombre: string
+  horas: number
+  rag: EstadoRag
+}
+
+/** Horas por iniciativa (bloque → tarea → iniciativa), coloreadas por su RAG. */
+export function tiempoPorIniciativa(
+  bloques: Bloque[],
+  iniciativas: Iniciativa[],
+  tareaIni: { id: string; iniciativa_id: string | null }[],
+): IniciativaBalance[] {
+  const iniPorId = new Map(iniciativas.map((i) => [i.id, i]))
+  const iniDeTarea = new Map(tareaIni.map((t) => [t.id, t.iniciativa_id]))
+
+  const minPorIni = new Map<string, number>()
+  for (const b of bloques) {
+    if (!b.tarea_id) continue
+    const iniId = iniDeTarea.get(b.tarea_id)
+    if (!iniId) continue
+    minPorIni.set(iniId, (minPorIni.get(iniId) ?? 0) + duracionMin(b))
+  }
+
+  const res: IniciativaBalance[] = []
+  for (const [id, min] of minPorIni) {
+    const ini = iniPorId.get(id)
+    if (ini) res.push({ nombre: ini.nombre, horas: +(min / 60).toFixed(1), rag: ini.estado_rag })
+  }
+  res.sort((x, y) => y.horas - x.horas)
+  return res
+}
+
+/** Conteo de iniciativas por estado RAG. */
+export function tallyRag(iniciativas: Iniciativa[]): Record<EstadoRag, number> {
+  const t: Record<EstadoRag, number> = { rojo: 0, ambar: 0, verde: 0 }
+  for (const i of iniciativas) t[i.estado_rag]++
+  return t
 }
