@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
-import { Plus, Pencil, Trash2, Users, User } from 'lucide-react'
+import { Plus, Pencil, Trash2, Users, User, Check, RotateCcw } from 'lucide-react'
 import type { EstadoRag, Iniciativa } from '../types/database'
 import {
   type IniciativaInput,
-  listIniciativas,
+  listIniciativasTodas,
   createIniciativa,
   updateIniciativa,
   setRag,
+  setActivaIniciativa,
   deleteIniciativa,
 } from '../data/iniciativas'
 import { RagSelector } from '../components/RagSelector'
@@ -26,7 +27,7 @@ export function IniciativasModule() {
     setLoading(true)
     setError(null)
     try {
-      setItems(await listIniciativas())
+      setItems(await listIniciativasTodas())
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No pude cargar las iniciativas.')
     } finally {
@@ -64,6 +65,19 @@ export function IniciativasModule() {
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No pude cambiar el RAG.')
       await load()
+    }
+  }
+
+  async function handleFinalizar(ini: Iniciativa) {
+    setBusy(true)
+    setError(null)
+    try {
+      await setActivaIniciativa(ini.id, !ini.activa)
+      await load()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No pude cambiar la iniciativa.')
+    } finally {
+      setBusy(false)
     }
   }
 
@@ -141,11 +155,20 @@ export function IniciativasModule() {
       ) : (
         <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: '0.6rem' }}>
           {items.map((ini) => (
-            <li key={ini.id} className="card" style={{ padding: '0.8rem 0.9rem' }}>
+            <li
+              key={ini.id}
+              className="card"
+              style={{ padding: '0.8rem 0.9rem', opacity: ini.activa ? 1 : 0.6 }}
+            >
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.8rem' }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                     <strong style={{ fontSize: '1.05rem' }}>{ini.nombre}</strong>
+                    {!ini.activa && (
+                      <span className="sello-goma" style={{ fontSize: '0.7rem', padding: '0.05em 0.4em' }}>
+                        Hecho
+                      </span>
+                    )}
                     <span
                       className="mono-tag"
                       style={{
@@ -169,6 +192,16 @@ export function IniciativasModule() {
                   </p>
                 </div>
                 <div style={{ display: 'flex', gap: '0.4rem' }}>
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={() => handleFinalizar(ini)}
+                    disabled={busy}
+                    title={ini.activa ? 'Finalizar' : 'Reabrir'}
+                    style={{ padding: '0.3rem 0.4rem', background: 'var(--papel)', color: 'var(--tinta)' }}
+                  >
+                    {ini.activa ? <Check size={15} aria-hidden /> : <RotateCcw size={15} aria-hidden />}
+                  </button>
                   <button
                     type="button"
                     className="btn"

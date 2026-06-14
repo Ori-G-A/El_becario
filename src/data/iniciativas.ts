@@ -20,6 +20,24 @@ export async function listIniciativas(): Promise<Iniciativa[]> {
   return data ?? []
 }
 
+/** Todas las iniciativas (activas y finalizadas), activas primero. */
+export async function listIniciativasTodas(): Promise<Iniciativa[]> {
+  const { data, error } = await supabase
+    .from('iniciativa')
+    .select('*')
+    .order('activa', { ascending: false })
+    .order('orden_prioridad', { ascending: true })
+    .order('creada_en', { ascending: true })
+  if (error) throw new Error(error.message)
+  return data ?? []
+}
+
+/** Finaliza (activa=false) o reabre (activa=true) una iniciativa. */
+export async function setActivaIniciativa(id: string, activa: boolean): Promise<void> {
+  const { error } = await supabase.from('iniciativa').update({ activa }).eq('id', id)
+  if (error) throw new Error(error.message)
+}
+
 export async function createIniciativa(
   input: IniciativaInput,
   orden: number,

@@ -18,15 +18,22 @@ import {
   type SemanaSerie,
   type AreaBalance,
   type IniciativaBalance,
+  type AvanceTop12,
+  type TareasPorIni,
+  type RagSemana,
   serieSemanal,
   balanceAreas,
   tiempoPorIniciativa,
   tallyRag,
+  avanceTop12,
+  tareasPorIniciativa,
+  ragTrend,
 } from '../lib/dashboard'
 import { listBloquesDesde } from '../data/bloques'
 import { listAreas } from '../data/areas'
 import { listIniciativas } from '../data/iniciativas'
-import { listTareaAreas, listTareaIniciativas } from '../data/tareas'
+import { listTareaAreas, listTareasResumen, type TareaResumen } from '../data/tareas'
+import { listRevisiones } from '../data/revisiones'
 
 const TINTA = '#181818'
 const ROJO = '#FB4D3D'
@@ -65,6 +72,9 @@ export function DashboardModule() {
   const [balance, setBalance] = useState<AreaBalance[]>([])
   const [iniBalance, setIniBalance] = useState<IniciativaBalance[]>([])
   const [rag, setRag] = useState<Record<EstadoRag, number>>({ rojo: 0, ambar: 0, verde: 0 })
+  const [avance, setAvance] = useState<AvanceTop12>({ hechas: 0, total: 0 })
+  const [tareasIni, setTareasIni] = useState<TareasPorIni[]>([])
+  const [ragSerie, setRagSerie] = useState<RagSemana[]>([])
   const [hayDatos, setHayDatos] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -74,26 +84,31 @@ export function DashboardModule() {
     setError(null)
     try {
       const desde = addDays(mondayISO(), -7 * (SEMANAS - 1))
-      const [bloques, areas, tareaAreas, iniciativas, tareaIni]: [
+      const [bloques, areas, tareaAreas, iniciativas, tareas, revisiones]: [
         Bloque[],
         Area[],
         { tarea_id: string; area_id: string }[],
         Iniciativa[],
-        { id: string; iniciativa_id: string | null }[],
+        TareaResumen[],
+        Awaited<ReturnType<typeof listRevisiones>>,
       ] = await Promise.all([
         listBloquesDesde(desde),
         listAreas(),
         listTareaAreas(),
         listIniciativas(),
-        listTareaIniciativas(),
+        listTareasResumen(),
+        listRevisiones(),
       ])
-      setHayDatos(bloques.length > 0 || iniciativas.length > 0)
+      setHayDatos(bloques.length > 0 || iniciativas.length > 0 || tareas.length > 0)
       setSerie(serieSemanal(bloques, SEMANAS))
       const ultimas4 = addDays(mondayISO(), -21)
       const recientes = bloques.filter((b) => b.inicio >= ultimas4)
       setBalance(balanceAreas(recientes, areas, tareaAreas))
-      setIniBalance(tiempoPorIniciativa(recientes, iniciativas, tareaIni))
+      setIniBalance(tiempoPorIniciativa(recientes, iniciativas, tareas))
       setRag(tallyRag(iniciativas))
+      setAvance(avanceTop12(tareas))
+      setTareasIni(tareasPorIniciativa(iniciativas, tareas))
+      setRagSerie(ragTrend(revisiones))
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No pude cargar el panel.')
     } finally {
@@ -241,6 +256,89 @@ export function DashboardModule() {
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
+            )}
+          </Tarjeta>
+
+          <Tarjeta titulo="Avance del Top 12">
+            {avance.total === 0 ? (
+              <p className="mono-tag" style={{ opacity: 0.7 }}>Sin tareas en el Top 12.</p>
+            ) : (
+              <>
+                <p style={{ marginBottom: '0.6rem' }}>
+                  <strong style={{ fontFamily: 'var(--font-display)', fontSize: '1.6rem' }}>
+                    {avance.hechas}/{avance.total}
+                  </strong>{' '}
+                  <span className="mono-tag" style={{ opacity: 0.7 }}>hechas</span>
+                </p>
+                <div
+                  style={{
+                    height: 16,
+                    border: 'var(--borde)',
+                    borderRadius: 'var(--radio)',
+                    overflow: 'hidden',
+                    background: 'var(--papel-hueco)',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: `${Math.round((avance.hechas / avance.total) * 100)}%`,
+                      height: '100%',
+                      background: RAG_COLOR.verde,
+                    }}
+                  />
+                </div>
+              </>
+            )}
+          </Tarjeta>
+
+          <Tarjeta titulo="Tareas por iniciativa">
+            {tareasIni.length === 0 ? (
+              <p className="mono-tag" style={{ opacity: 0.7 }}>
+                Aún no hay tareas asignadas a iniciativas.
+              </p>
+            ) : (
+              <ResponsiveContainer width="100%" height={Math.max(140, tareasIni.length * 42)}>
+                <BarChart
+                  data={tareasIni}
+                  layout="vertical"
+                  margin={{ top: 4, right: 12, left: 8, bottom: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#D8D5C9" horizontal={false} />
+                  <XAxis type="number" allowDecimals={false} tick={ejeTick} stroke={TINTA} />
+                  <YAxis type="category" dataKey="nombre" tick={ejeTick} stroke={TINTA} width={84} />
+                  <Tooltip contentStyle={tooltipStyle} />
+                  <Legend wrapperStyle={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 12 }} />
+                  <Bar dataKey="hechas" stackId="t" fill={RAG_COLOR.verde} name="Hechas" radius={[0, 0, 0, 0]} />
+                  <Bar dataKey="pendientes" stackId="t" fill={TINTA} name="Pendientes" radius={[0, 3, 3, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </Tarjeta>
+
+          <Tarjeta titulo="RAG personal · semanas recientes">
+            {ragSerie.length === 0 ? (
+              <p className="mono-tag" style={{ opacity: 0.7 }}>
+                Cierra revisiones semanales para ver la tendencia.
+              </p>
+            ) : (
+              <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                {ragSerie.map((s, i) => (
+                  <div key={`${s.label}-${i}`} style={{ textAlign: 'center' }}>
+                    <div
+                      style={{
+                        width: 34,
+                        height: 34,
+                        borderRadius: 'var(--radio)',
+                        border: 'var(--borde)',
+                        background: s.rag ? RAG_COLOR[s.rag] : 'var(--papel-hueco)',
+                      }}
+                    />
+                    <span className="mono-tag" style={{ fontSize: '0.62rem', opacity: 0.6 }}>
+                      {s.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
             )}
           </Tarjeta>
         </>

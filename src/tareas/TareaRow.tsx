@@ -1,13 +1,12 @@
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { GripVertical, Pencil, Trash2, Target, ShieldAlert } from 'lucide-react'
+import { GripVertical, Pencil, Trash2, Target, ShieldAlert, CheckCircle2, Circle } from 'lucide-react'
 import type { Area } from '../types/database'
 import type { TareaConAreas } from '../data/tareas'
 import { AreaIcon } from '../components/AreaIcon'
 
 export function TareaRow({
   tarea,
-  posicion,
   areasById,
   iniciativaNombre,
   isTopGoal,
@@ -15,9 +14,9 @@ export function TareaRow({
   onEdit,
   onDelete,
   onToggleTopGoal,
+  onToggleHecha,
 }: {
   tarea: TareaConAreas
-  posicion: number
   areasById: Map<string, Area>
   iniciativaNombre?: string
   isTopGoal: boolean
@@ -25,7 +24,9 @@ export function TareaRow({
   onEdit: () => void
   onDelete: () => void
   onToggleTopGoal: () => void
+  onToggleHecha: () => void
 }) {
+  const hecha = tarea.estado === 'hecha'
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: tarea.id })
 
@@ -66,19 +67,35 @@ export function TareaRow({
         <GripVertical size={18} aria-hidden />
       </button>
 
-      <span
-        className="mono-tag"
-        aria-hidden
-        style={{ width: '1.4rem', textAlign: 'right', opacity: 0.6 }}
+      <button
+        type="button"
+        onClick={onToggleHecha}
+        disabled={busy}
+        aria-pressed={hecha}
+        title={hecha ? 'Marcar como pendiente' : 'Marcar como hecha'}
+        style={{
+          background: 'transparent',
+          border: 'none',
+          padding: 2,
+          cursor: 'pointer',
+          color: hecha ? 'var(--rag-verde)' : 'var(--tinta)',
+        }}
       >
-        {posicion}
-      </span>
+        {hecha ? <CheckCircle2 size={20} aria-hidden /> : <Circle size={20} aria-hidden />}
+      </button>
 
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{ flex: 1, minWidth: 0, opacity: hecha ? 0.55 : 1 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
           {isTopGoal && <span className="rag" style={{ background: 'var(--rag-ambar)' }}>Top Goal</span>}
           {tarea.confidencial && <ShieldAlert size={14} aria-label="Confidencial" />}
-          <strong style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <strong
+            style={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              textDecoration: hecha ? 'line-through' : 'none',
+            }}
+          >
             {tarea.titulo}
           </strong>
         </div>

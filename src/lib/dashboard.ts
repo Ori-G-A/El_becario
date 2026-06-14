@@ -1,6 +1,19 @@
-import type { Area, Bloque, EstadoRag, Iniciativa } from '../types/database'
+import type {
+  Area,
+  Bloque,
+  EstadoRag,
+  EstadoTarea,
+  Iniciativa,
+  RevisionSemanal,
+} from '../types/database'
 import { calcularMetricas, duracionMin } from './metricas'
 import { addDays, fechaLocalDeISO, mondayISO } from './date'
+
+interface TareaLite {
+  iniciativa_id: string | null
+  estado: EstadoTarea
+  es_top12: boolean
+}
 
 function etiquetaCorta(fechaISO: string): string {
   const [, m, d] = fechaISO.split('-').map(Number)
@@ -119,4 +132,55 @@ export function tallyRag(iniciativas: Iniciativa[]): Record<EstadoRag, number> {
   const t: Record<EstadoRag, number> = { rojo: 0, ambar: 0, verde: 0 }
   for (const i of iniciativas) t[i.estado_rag]++
   return t
+}
+
+export interface AvanceTop12 {
+  hechas: number
+  total: number
+}
+
+export function avanceTop12(tareas: TareaLite[]): AvanceTop12 {
+  const top = tareas.filter((t) => t.es_top12)
+  return { total: top.length, hechas: top.filter((t) => t.estado === 'hecha').length }
+}
+
+export interface TareasPorIni {
+  nombre: string
+  hechas: number
+  pendientes: number
+}
+
+/** Tareas hechas vs pendientes por iniciativa (solo iniciativas con tareas). */
+export function tareasPorIniciativa(
+  iniciativas: Iniciativa[],
+  tareas: TareaLite[],
+): TareasPorIni[] {
+  const iniPorId = new Map(iniciativas.map((i) => [i.id, i]))
+  const acc = new Map<string, { hechas: number; pendientes: number }>()
+  for (const t of tareas) {
+    if (!t.iniciativa_id) continue
+    const a = acc.get(t.iniciativa_id) ?? { hechas: 0, pendientes: 0 }
+    if (t.estado === 'hecha') a.hechas++
+    else a.pendientes++
+    acc.set(t.iniciativa_id, a)
+  }
+  const res: TareasPorIni[] = []
+  for (const [id, a] of acc) {
+    const ini = iniPorId.get(id)
+    if (ini) res.push({ nombre: ini.nombre, hechas: a.hechas, pendientes: a.pendientes })
+  }
+  return res.sort((x, y) => y.hechas + y.pendientes - (x.hechas + x.pendientes))
+}
+
+export interface RagSemana {
+  label: string
+  rag: EstadoRag | null
+}
+
+/** Tendencia del RAG personal a partir de las revisiones (más viejas primero). */
+export function ragTrend(revisiones: RevisionSemanal[], n = 8): RagSemana[] {
+  return revisiones
+    .slice(0, n)
+    .reverse()
+    .map((r) => ({ label: etiquetaCorta(r.semana), rag: r.rag_global }))
 }

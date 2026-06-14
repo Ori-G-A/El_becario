@@ -28,6 +28,7 @@ import {
   reorderTop12,
   setTopGoalDeHoy,
   clearTopGoal,
+  setEstadoTarea,
 } from '../data/tareas'
 import { todayISO } from '../lib/date'
 import { TareaForm } from './TareaForm'
@@ -110,6 +111,19 @@ export function Top12Module() {
       await load()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No pude borrar la tarea.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function handleToggleHecha(t: TareaConAreas) {
+    setBusy(true)
+    setError(null)
+    try {
+      await setEstadoTarea(t.id, t.estado === 'hecha' ? 'pendiente' : 'hecha')
+      await load()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No pude cambiar el estado.')
     } finally {
       setBusy(false)
     }
@@ -257,11 +271,10 @@ export function Top12Module() {
             strategy={verticalListSortingStrategy}
           >
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: '0.6rem' }}>
-              {tareas.map((t, i) => (
+              {tareas.map((t) => (
                 <TareaRow
                   key={t.id}
                   tarea={t}
-                  posicion={i + 1}
                   areasById={areasById}
                   iniciativaNombre={
                     t.iniciativa_id ? iniciativasById.get(t.iniciativa_id)?.nombre : undefined
@@ -271,6 +284,7 @@ export function Top12Module() {
                   onEdit={() => setForm({ open: true, editing: t })}
                   onDelete={() => handleDelete(t)}
                   onToggleTopGoal={() => handleToggleTopGoal(t)}
+                  onToggleHecha={() => handleToggleHecha(t)}
                 />
               ))}
             </ul>
