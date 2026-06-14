@@ -142,8 +142,8 @@ export function AreasModule() {
             El archivero está vacío.
           </p>
           <p style={{ marginBottom: '1.1rem', opacity: 0.8 }}>
-            Te dejo las 6 áreas de siempre y después las ajustás. ¿O preferís
-            armarlas vos?
+            Te dejo las 6 áreas de siempre y luego las ajustas. ¿O prefieres
+            armarlas tú?
           </p>
           <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
             <button type="button" className="btn" onClick={handleSeed} disabled={busy}>

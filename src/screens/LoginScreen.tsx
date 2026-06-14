@@ -27,8 +27,8 @@ export function LoginScreen() {
     return (
       <AuthShell
         badge="Acceso · magic link"
-        title="Te mandé un correo"
-        subtitle={`Revisá ${email} y abrí el enlace para entrar. Mirá el spam también, no me ofendo.`}
+        title="Te envié un correo"
+        subtitle={`Revisa ${email} y abre el enlace para entrar. Mira también el spam, no me ofendo.`}
       >
         <button
           type="button"
@@ -46,7 +46,7 @@ export function LoginScreen() {
     <AuthShell
       badge="Acceso · magic link"
       title="El Becario"
-      subtitle="Sin contraseñas. Poné tu correo y te mando un enlace de un solo uso."
+      subtitle="Sin contraseñas. Escribe tu correo y te envío un enlace de un solo uso."
     >
       <form onSubmit={onSubmit}>
         <label
@@ -76,7 +76,7 @@ export function LoginScreen() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="vos@correo.com"
+            placeholder="tu@correo.com"
             style={{ ...inputStyle, paddingLeft: 38 }}
           />
         </div>
@@ -94,7 +94,7 @@ export function LoginScreen() {
           style={{ width: '100%', justifyContent: 'center' }}
         >
           <Send size={18} aria-hidden />
-          {status === 'sending' ? 'Enviando…' : 'Mandame el enlace'}
+          {status === 'sending' ? 'Enviando…' : 'Envíame el enlace'}
         </button>
       </form>
     </AuthShell>

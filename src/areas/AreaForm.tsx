@@ -27,7 +27,7 @@ export function AreaForm({
     e.preventDefault()
     const limpio = nombre.trim()
     if (!limpio) {
-      setError('Ponele un nombre al área.')
+      setError('Ponle un nombre al área.')
       return
     }
     onSave({ nombre: limpio, color, icono })

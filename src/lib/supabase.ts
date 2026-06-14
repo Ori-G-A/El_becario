@@ -1,8 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from '../types/database'
 
-const url = import.meta.env.VITE_SUPABASE_URL
+const rawUrl = import.meta.env.VITE_SUPABASE_URL
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+// Normaliza la URL: el cliente necesita la base del proyecto, no el endpoint
+// REST. Si se cuela "/rest/v1" o una barra final, lo limpiamos.
+const url = rawUrl?.replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '')
 
 /** ¿Están cargadas las env vars de Supabase? */
 export const isSupabaseConfigured = Boolean(url && anonKey)
@@ -12,7 +16,7 @@ if (!isSupabaseConfigured) {
   // configuración. Pero avisamos claro en consola.
   console.warn(
     'Faltan VITE_SUPABASE_URL o VITE_SUPABASE_ANON_KEY. ' +
-      'Copiá .env.example a .env.local y completá los valores del proyecto Supabase.',
+      'Copia .env.example a .env.local y completa los valores del proyecto Supabase.',
   )
 }
 

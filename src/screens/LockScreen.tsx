@@ -48,7 +48,7 @@ export function LockScreen() {
   return (
     <AuthShell
       badge={creating ? 'App-lock · nuevo PIN' : 'App-lock'}
-      title={creating ? 'Poné tu PIN' : 'Tu PIN, por favor'}
+      title={creating ? 'Crea tu PIN' : 'Tu PIN, por favor'}
       subtitle={
         creating
           ? 'Es la cerradura de tu escritorio, solo en este dispositivo. Nunca viaja a ningún servidor.'
@@ -82,7 +82,7 @@ export function LockScreen() {
               htmlFor="pin-confirm"
               style={{ display: 'block', marginBottom: '0.4rem' }}
             >
-              Repetí el PIN
+              Repite el PIN
             </label>
             <input
               id="pin-confirm"

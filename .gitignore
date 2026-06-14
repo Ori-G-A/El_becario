@@ -83,6 +83,9 @@ out
 dist
 .output
 
+# vite-plugin-pwa dev output
+dev-dist
+
 # Gatsby files
 .cache/
 # Comment in the public line in if your project uses Gatsby and not Next.js
