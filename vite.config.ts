@@ -10,7 +10,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       // El SW se registra en dev para poder probar la instalación localmente.
       devOptions: { enabled: true },
-      includeAssets: ['favicon.svg', 'becario-icon.svg'],
+      includeAssets: ['favicon.svg', 'becario-icon.svg', 'apple-touch-icon.png'],
       // SEGURIDAD: solo precacheamos el shell estático (JS/CSS/HTML/iconos).
       // NO se define runtimeCaching para el dominio de Supabase, así que las
       // respuestas con datos sensibles NUNCA quedan cacheadas offline en claro.
@@ -32,18 +32,10 @@ export default defineConfig({
         background_color: '#EFEDE4',
         theme_color: '#EFEDE4',
         icons: [
-          {
-            src: 'becario-icon.svg',
-            sizes: 'any',
-            type: 'image/svg+xml',
-            purpose: 'any',
-          },
-          {
-            src: 'becario-icon.svg',
-            sizes: 'any',
-            type: 'image/svg+xml',
-            purpose: 'maskable',
-          },
+          { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: 'becario-icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
         ],
       },
     }),
