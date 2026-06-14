@@ -14,6 +14,7 @@ export type TipoBloque =
   | 'reactivo'
   | 'reunion'
   | 'autocuidado'
+  | 'sueno'
 
 // NOTA: estos modelos son `type` (no `interface`) a propósito. Un `interface`
 // no es asignable a `Record<string, unknown>`, y el cliente de Supabase exige

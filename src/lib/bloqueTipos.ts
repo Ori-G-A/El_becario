@@ -1,4 +1,4 @@
-import { Target, BrainCircuit, Flame, Users, HeartPulse, type LucideIcon } from 'lucide-react'
+import { Target, BrainCircuit, Flame, Users, HeartPulse, Moon, type LucideIcon } from 'lucide-react'
 import type { TipoBloque } from '../types/database'
 
 export interface TipoBloqueConfig {
@@ -14,6 +14,7 @@ export const TIPO_BLOQUE: Record<TipoBloque, TipoBloqueConfig> = {
   reactivo: { label: 'Reactivo', icon: Flame, color: '#C77D3A' },
   reunion: { label: 'Reunión', icon: Users, color: '#6B8E9E' },
   autocuidado: { label: 'Autocuidado', icon: HeartPulse, color: '#5C8A4A' },
+  sueno: { label: 'Sueño', icon: Moon, color: '#46506B' },
 }
 
 export const TIPOS_BLOQUE = Object.keys(TIPO_BLOQUE) as TipoBloque[]

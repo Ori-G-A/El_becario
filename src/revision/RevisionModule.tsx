@@ -3,7 +3,10 @@ import { Check, History } from 'lucide-react'
 import type { EstadoRag, RevisionSemanal } from '../types/database'
 import { mondayISO, formatFechaLarga } from '../lib/date'
 import { listRevisiones, getRevision, upsertRevision } from '../data/revisiones'
+import { listBloquesDeSemana } from '../data/bloques'
+import { calcularMetricas, type MetricasSemana } from '../lib/metricas'
 import { RagSelector } from '../components/RagSelector'
+import { MetricasPanel } from './MetricasPanel'
 import { inputStyle } from '../components/styles'
 
 const RAG_LABEL: Record<EstadoRag, string> = {
@@ -22,6 +25,7 @@ export function RevisionModule() {
   const [rag, setRag] = useState<EstadoRag | null>(null)
   const [notas, setNotas] = useState('')
   const [historial, setHistorial] = useState<RevisionSemanal[]>([])
+  const [metricas, setMetricas] = useState<MetricasSemana | null>(null)
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -31,10 +35,15 @@ export function RevisionModule() {
     setLoading(true)
     setError(null)
     try {
-      const [actual, todas] = await Promise.all([getRevision(semana), listRevisiones()])
+      const [actual, todas, bloques] = await Promise.all([
+        getRevision(semana),
+        listRevisiones(),
+        listBloquesDeSemana(semana),
+      ])
       setRag(actual?.rag_global ?? null)
       setNotas(actual?.notas ?? '')
       setHistorial(todas)
+      setMetricas(calcularMetricas(bloques))
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No pude cargar la revisión.')
     } finally {
@@ -87,15 +96,19 @@ export function RevisionModule() {
         <p className="mono-tag">Juntando la semana…</p>
       ) : (
         <>
+          {metricas && (
+            <MetricasPanel metricas={metricas} onUsarSugerido={(r) => { setRag(r); setGuardado(false) }} />
+          )}
+
           <div className="card" style={{ padding: '1.25rem', marginBottom: '1.5rem' }}>
             <p style={{ marginBottom: '1rem', opacity: 0.85 }}>
-              ¿Cómo te fue? El semáforo es a criterio tuyo; el automático llega en la
-              próxima fase.
+              El RAG sale solo de tus métricas, pero el criterio final es tuyo:
+              ajusta el semáforo si no refleja tu semana.
             </p>
 
-            <p className="mono-tag" style={{ marginBottom: '0.45rem' }}>RAG global</p>
+            <p className="mono-tag" style={{ marginBottom: '0.45rem' }}>RAG de la semana</p>
             <div style={{ marginBottom: '1.1rem' }}>
-              <RagSelector value={rag} onChange={setRag} />
+              <RagSelector value={rag} onChange={(r) => { setRag(r); setGuardado(false) }} />
             </div>
 
             <label className="mono-tag" htmlFor="notas" style={{ display: 'block', marginBottom: '0.4rem' }}>
