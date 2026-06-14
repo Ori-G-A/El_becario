@@ -17,11 +17,14 @@ import {
   createBloque,
   updateBloque,
   deleteBloque,
+  setRealInicio,
+  setRealFin,
 } from '../data/bloques'
 import { listTop12, type TareaConAreas } from '../data/tareas'
 import { BloqueForm } from './BloqueForm'
 import { DiaTimeline } from './DiaTimeline'
 import { SemanaTimeline } from './SemanaTimeline'
+import { RegistroReal } from './RegistroReal'
 
 type Modo = 'dia' | 'semana'
 
@@ -108,6 +111,25 @@ export function CalendarioModule() {
       await load(modo, fechaISO)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No pude borrar el bloque.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function marcarReal(b: Bloque, campo: 'real_inicio' | 'real_fin', valor: string | null) {
+    setBusy(true)
+    setError(null)
+    try {
+      if (campo === 'real_inicio') await setRealInicio(b.id, valor)
+      else await setRealFin(b.id, valor)
+      setBloques((prev) => prev.map((x) => (x.id === b.id ? { ...x, [campo]: valor } : x)))
+      setForm((f) =>
+        f.editing && f.editing.id === b.id
+          ? { ...f, editing: { ...f.editing, [campo]: valor } }
+          : f,
+      )
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No pude guardar el registro.')
     } finally {
       setBusy(false)
     }
@@ -266,16 +288,19 @@ export function CalendarioModule() {
             onCancel={() => setForm((f) => ({ ...f, open: false, editing: null }))}
           />
           {form.editing && (
-            <button
-              type="button"
-              className="btn"
-              onClick={() => form.editing && handleDelete(form.editing)}
-              disabled={busy}
-              style={{ marginBottom: '1rem', background: 'var(--papel)', color: 'var(--rag-rojo)' }}
-            >
-              <Trash2 size={15} aria-hidden />
-              Borrar bloque
-            </button>
+            <>
+              <RegistroReal bloque={form.editing} busy={busy} onMarcar={(campo, valor) => form.editing && marcarReal(form.editing, campo, valor)} />
+              <button
+                type="button"
+                className="btn"
+                onClick={() => form.editing && handleDelete(form.editing)}
+                disabled={busy}
+                style={{ marginBottom: '1rem', background: 'var(--papel)', color: 'var(--rag-rojo)' }}
+              >
+                <Trash2 size={15} aria-hidden />
+                Borrar bloque
+              </button>
+            </>
           )}
         </>
       )}

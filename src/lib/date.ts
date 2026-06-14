@@ -68,6 +68,11 @@ export function fechaLocalDeISO(iso: string): string {
   return toISO(new Date(iso))
 }
 
+/** Minutos entre dos timestamps ISO (b - a). Redondeado. */
+export function minutosEntre(aISO: string, bISO: string): number {
+  return Math.round((new Date(bISO).getTime() - new Date(aISO).getTime()) / 60000)
+}
+
 /** Lunes de la semana que contiene a `fechaISO` (YYYY-MM-DD). */
 export function lunesDe(fechaISO: string): string {
   const [y, m, d] = fechaISO.split('-').map(Number)
