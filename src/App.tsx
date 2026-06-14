@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { useAuth } from './auth/useAuth'
 import { useLock } from './lock/useLock'
 import { isSupabaseConfigured } from './lib/supabase'
@@ -6,11 +6,26 @@ import { LoginScreen } from './screens/LoginScreen'
 import { LockScreen } from './screens/LockScreen'
 import { ConfigScreen } from './screens/ConfigScreen'
 import { AppShell, type View } from './components/AppShell'
-import { AreasModule } from './areas/AreasModule'
-import { Top12Module } from './tareas/Top12Module'
-import { IniciativasModule } from './iniciativas/IniciativasModule'
-import { RevisionModule } from './revision/RevisionModule'
-import { CalendarioModule } from './calendario/CalendarioModule'
+
+// Cada módulo se carga al abrir su pestaña (split de dnd-kit, recharts, etc.).
+const CalendarioModule = lazy(() =>
+  import('./calendario/CalendarioModule').then((m) => ({ default: m.CalendarioModule })),
+)
+const Top12Module = lazy(() =>
+  import('./tareas/Top12Module').then((m) => ({ default: m.Top12Module })),
+)
+const IniciativasModule = lazy(() =>
+  import('./iniciativas/IniciativasModule').then((m) => ({ default: m.IniciativasModule })),
+)
+const AreasModule = lazy(() =>
+  import('./areas/AreasModule').then((m) => ({ default: m.AreasModule })),
+)
+const RevisionModule = lazy(() =>
+  import('./revision/RevisionModule').then((m) => ({ default: m.RevisionModule })),
+)
+const DashboardModule = lazy(() =>
+  import('./dashboard/DashboardModule').then((m) => ({ default: m.DashboardModule })),
+)
 
 function LoadingScreen() {
   return (
@@ -32,11 +47,14 @@ function App() {
 
   return (
     <AppShell view={view} onNavigate={setView}>
-      {view === 'calendario' && <CalendarioModule />}
-      {view === 'top12' && <Top12Module />}
-      {view === 'iniciativas' && <IniciativasModule />}
-      {view === 'areas' && <AreasModule />}
-      {view === 'revision' && <RevisionModule />}
+      <Suspense fallback={<p className="mono-tag" style={{ padding: '1rem 0' }}>Cargando…</p>}>
+        {view === 'calendario' && <CalendarioModule />}
+        {view === 'top12' && <Top12Module />}
+        {view === 'iniciativas' && <IniciativasModule />}
+        {view === 'areas' && <AreasModule />}
+        {view === 'revision' && <RevisionModule />}
+        {view === 'panel' && <DashboardModule />}
+      </Suspense>
     </AppShell>
   )
 }

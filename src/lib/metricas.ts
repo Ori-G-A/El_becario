@@ -20,6 +20,11 @@ function dur(b: Bloque): number {
   return realMin(b) ?? planMin(b)
 }
 
+/** Duración efectiva de un bloque en minutos (real si está, si no planeada). */
+export function duracionMin(b: Bloque): number {
+  return dur(b)
+}
+
 export interface MetricasSemana {
   horasTrabajadas: number
   techoHoras: number

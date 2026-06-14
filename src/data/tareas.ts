@@ -28,6 +28,13 @@ async function fetchAreaMap(tareaIds: string[]): Promise<Map<string, string[]>> 
   return map
 }
 
+/** Todos los vínculos tarea↔área del usuario (para el dashboard). */
+export async function listTareaAreas(): Promise<{ tarea_id: string; area_id: string }[]> {
+  const { data, error } = await supabase.from('tarea_area').select('tarea_id, area_id')
+  if (error) throw new Error(error.message)
+  return data ?? []
+}
+
 /** Tareas del Top 12, ordenadas por prioridad, con sus áreas. */
 export async function listTop12(): Promise<TareaConAreas[]> {
   const { data, error } = await supabase

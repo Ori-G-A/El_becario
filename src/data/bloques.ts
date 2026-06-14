@@ -40,6 +40,17 @@ export async function listBloquesDeSemana(lunesISO: string): Promise<Bloque[]> {
   return data ?? []
 }
 
+/** Todos los bloques con inicio desde `desdeISO` (para series del dashboard). */
+export async function listBloquesDesde(desdeISO: string): Promise<Bloque[]> {
+  const { data, error } = await supabase
+    .from('bloque')
+    .select('*')
+    .gte('inicio', desdeISO)
+    .order('inicio', { ascending: true })
+  if (error) throw new Error(error.message)
+  return data ?? []
+}
+
 /** Bloques marcados como importantes con inicio en los próximos `dias`. */
 export async function listImportantesProximos(dias = 14): Promise<Bloque[]> {
   const ahora = new Date().toISOString()

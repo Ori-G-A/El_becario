@@ -7,6 +7,7 @@ import {
   FolderKanban,
   CalendarCheck,
   CalendarDays,
+  LayoutDashboard,
   Download,
 } from 'lucide-react'
 import { useAuth } from '../auth/useAuth'
@@ -14,7 +15,7 @@ import { useLock } from '../lock/useLock'
 import { exportarBackup } from '../data/backup'
 import { AlertasBanner } from './AlertasBanner'
 
-export type View = 'calendario' | 'top12' | 'iniciativas' | 'areas' | 'revision'
+export type View = 'calendario' | 'top12' | 'iniciativas' | 'areas' | 'revision' | 'panel'
 
 const TABS: { id: View; label: string; icon: typeof ListChecks }[] = [
   { id: 'calendario', label: 'Día', icon: CalendarDays },
@@ -22,6 +23,7 @@ const TABS: { id: View; label: string; icon: typeof ListChecks }[] = [
   { id: 'iniciativas', label: 'Iniciativas', icon: FolderKanban },
   { id: 'areas', label: 'Áreas', icon: Tags },
   { id: 'revision', label: 'Revisión', icon: CalendarCheck },
+  { id: 'panel', label: 'Panel', icon: LayoutDashboard },
 ]
 
 /** Marco principal de la app: barra superior + navegación + contenido. */
