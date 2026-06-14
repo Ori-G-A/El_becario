@@ -1,10 +1,25 @@
 import type { ReactNode } from 'react'
-import { Lock, LogOut } from 'lucide-react'
+import { Lock, LogOut, ListChecks, Tags } from 'lucide-react'
 import { useAuth } from '../auth/useAuth'
 import { useLock } from '../lock/useLock'
 
-/** Marco principal de la app: barra superior + contenido. */
-export function AppShell({ children }: { children: ReactNode }) {
+export type View = 'top12' | 'areas'
+
+const TABS: { id: View; label: string; icon: typeof ListChecks }[] = [
+  { id: 'top12', label: 'Top 12', icon: ListChecks },
+  { id: 'areas', label: 'Áreas', icon: Tags },
+]
+
+/** Marco principal de la app: barra superior + navegación + contenido. */
+export function AppShell({
+  view,
+  onNavigate,
+  children,
+}: {
+  view: View
+  onNavigate: (view: View) => void
+  children: ReactNode
+}) {
   const { signOut } = useAuth()
   const { lock } = useLock()
 
@@ -69,7 +84,46 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <main style={{ maxWidth: 760, margin: '0 auto', padding: '1.5rem 1rem 4rem' }}>
+      <nav
+        style={{
+          display: 'flex',
+          gap: '0.5rem',
+          padding: '0.6rem 1rem',
+          maxWidth: 760,
+          margin: '0 auto',
+        }}
+      >
+        {TABS.map((tab) => {
+          const active = view === tab.id
+          const Icon = tab.icon
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => onNavigate(tab.id)}
+              aria-current={active ? 'page' : undefined}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                padding: '0.45rem 0.9rem',
+                fontWeight: 600,
+                border: 'var(--borde)',
+                borderRadius: 'var(--radio)',
+                background: active ? 'var(--tinta)' : 'var(--papel)',
+                color: active ? 'var(--papel)' : 'var(--tinta)',
+                boxShadow: active ? 'var(--sombra-dura-sm)' : 'none',
+                cursor: 'pointer',
+              }}
+            >
+              <Icon size={16} aria-hidden />
+              {tab.label}
+            </button>
+          )
+        })}
+      </nav>
+
+      <main style={{ maxWidth: 760, margin: '0 auto', padding: '0.5rem 1rem 4rem' }}>
         {children}
       </main>
     </div>
