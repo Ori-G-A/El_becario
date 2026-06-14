@@ -40,6 +40,21 @@ export async function listBloquesDeSemana(lunesISO: string): Promise<Bloque[]> {
   return data ?? []
 }
 
+/** Bloques marcados como importantes con inicio en los próximos `dias`. */
+export async function listImportantesProximos(dias = 14): Promise<Bloque[]> {
+  const ahora = new Date().toISOString()
+  const hasta = new Date(Date.now() + dias * 86_400_000).toISOString()
+  const { data, error } = await supabase
+    .from('bloque')
+    .select('*')
+    .eq('importante', true)
+    .gte('inicio', ahora)
+    .lt('inicio', hasta)
+    .order('inicio', { ascending: true })
+  if (error) throw new Error(error.message)
+  return data ?? []
+}
+
 export async function createBloque(input: BloqueInput): Promise<Bloque> {
   const { data, error } = await supabase.from('bloque').insert(input).select().single()
   if (error) throw new Error(error.message)

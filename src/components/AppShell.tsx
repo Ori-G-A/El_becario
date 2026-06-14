@@ -12,6 +12,7 @@ import {
 import { useAuth } from '../auth/useAuth'
 import { useLock } from '../lock/useLock'
 import { exportarBackup } from '../data/backup'
+import { AlertasBanner } from './AlertasBanner'
 
 export type View = 'calendario' | 'top12' | 'iniciativas' | 'areas' | 'revision'
 
@@ -160,6 +161,7 @@ export function AppShell({
       </nav>
 
       <main style={{ maxWidth: 760, margin: '0 auto', padding: '0.5rem 1rem 4rem' }}>
+        <AlertasBanner />
         {children}
       </main>
     </div>
