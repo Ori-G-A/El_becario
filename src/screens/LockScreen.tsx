@@ -18,16 +18,16 @@ export function LockScreen() {
     e.preventDefault()
     setError(null)
 
-    if (pin.length < PIN_MIN_LENGTH) {
-      setError(`El PIN necesita al menos ${PIN_MIN_LENGTH} dígitos.`)
-      return
-    }
-
     setBusy(true)
     try {
       if (!hasPin) {
+        // El mínimo solo aplica al CREAR un PIN nuevo.
+        if (pin.length < PIN_MIN_LENGTH) {
+          setError(`El PIN necesita al menos ${PIN_MIN_LENGTH} dígitos.`)
+          return
+        }
         if (pin !== confirm) {
-          setError('Los dos PIN no coinciden. Probá de nuevo.')
+          setError('Los dos PIN no coinciden. Prueba otra vez.')
           return
         }
         await createPin(pin)
