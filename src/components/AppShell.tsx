@@ -1,14 +1,24 @@
-import type { ReactNode } from 'react'
-import { Lock, LogOut, ListChecks, Tags, FolderKanban } from 'lucide-react'
+import { useState, type ReactNode } from 'react'
+import {
+  Lock,
+  LogOut,
+  ListChecks,
+  Tags,
+  FolderKanban,
+  CalendarCheck,
+  Download,
+} from 'lucide-react'
 import { useAuth } from '../auth/useAuth'
 import { useLock } from '../lock/useLock'
+import { exportarBackup } from '../data/backup'
 
-export type View = 'top12' | 'iniciativas' | 'areas'
+export type View = 'top12' | 'iniciativas' | 'areas' | 'revision'
 
 const TABS: { id: View; label: string; icon: typeof ListChecks }[] = [
   { id: 'top12', label: 'Top 12', icon: ListChecks },
   { id: 'iniciativas', label: 'Iniciativas', icon: FolderKanban },
   { id: 'areas', label: 'Áreas', icon: Tags },
+  { id: 'revision', label: 'Revisión', icon: CalendarCheck },
 ]
 
 /** Marco principal de la app: barra superior + navegación + contenido. */
@@ -23,6 +33,18 @@ export function AppShell({
 }) {
   const { signOut } = useAuth()
   const { lock } = useLock()
+  const [exportando, setExportando] = useState(false)
+
+  async function respaldar() {
+    setExportando(true)
+    try {
+      await exportarBackup()
+    } catch (e) {
+      window.alert(e instanceof Error ? e.message : 'No pude generar el respaldo.')
+    } finally {
+      setExportando(false)
+    }
+  }
 
   return (
     <div style={{ minHeight: '100vh' }}>
@@ -67,6 +89,16 @@ export function AppShell({
           <button
             type="button"
             className="btn"
+            onClick={respaldar}
+            disabled={exportando}
+            title="Descargar respaldo (JSON)"
+            style={{ padding: '0.4rem 0.55rem' }}
+          >
+            <Download size={16} aria-hidden />
+          </button>
+          <button
+            type="button"
+            className="btn"
             onClick={lock}
             title="Bloquear"
             style={{ padding: '0.4rem 0.55rem' }}
@@ -88,6 +120,7 @@ export function AppShell({
       <nav
         style={{
           display: 'flex',
+          flexWrap: 'wrap',
           gap: '0.5rem',
           padding: '0.6rem 1rem',
           maxWidth: 760,

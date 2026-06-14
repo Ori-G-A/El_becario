@@ -9,6 +9,7 @@ import { AppShell, type View } from './components/AppShell'
 import { AreasModule } from './areas/AreasModule'
 import { Top12Module } from './tareas/Top12Module'
 import { IniciativasModule } from './iniciativas/IniciativasModule'
+import { RevisionModule } from './revision/RevisionModule'
 
 function LoadingScreen() {
   return (
@@ -33,6 +34,7 @@ function App() {
       {view === 'top12' && <Top12Module />}
       {view === 'iniciativas' && <IniciativasModule />}
       {view === 'areas' && <AreasModule />}
+      {view === 'revision' && <RevisionModule />}
     </AppShell>
   )
 }
