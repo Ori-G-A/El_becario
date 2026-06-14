@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="El Becario">
+  <rect width="512" height="512" rx="64" fill="#EFEDE4"/>
+  <!-- sello de goma "B" -->
+  <g transform="rotate(-8 256 256)">
+    <rect x="96" y="116" width="320" height="280" rx="20" fill="none" stroke="#2D4DFF" stroke-width="22"/>
+    <text x="256" y="312" font-family="Bricolage Grotesque, system-ui, sans-serif" font-size="220" font-weight="800" text-anchor="middle" fill="#2D4DFF">B</text>
+  </g>
+</svg>

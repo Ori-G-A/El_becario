@@ -1,0 +1,173 @@
+/* ============================================================
+   El Becario — Sistema de diseño
+   Neo-brutalismo con tema de escritorio de oficina.
+   ============================================================ */
+
+:root {
+  /* --- Tokens de color (disciplinados: 4-6) --- */
+  --papel: #efede4; /* fondo: papel de oficina frío */
+  --tinta: #181818; /* texto, bordes, sombras duras */
+  --rag-rojo: #fb4d3d; /* SOLO estado RAG */
+  --rag-ambar: #ffc53d; /* SOLO estado RAG */
+  --rag-verde: #2ecc71; /* SOLO estado RAG */
+  --sello: #2d4dff; /* ÚNICO color de acción: botones, links, CTAs */
+
+  /* Derivados utilitarios */
+  --papel-hueco: #e4e1d4; /* fondo levemente hundido */
+  --sello-tinta: #ffffff; /* texto sobre --sello (pasa WCAG AA) */
+
+  /* --- Geometría neo-brutalista --- */
+  --borde: 2.5px solid var(--tinta);
+  --sombra-dura: 4px 4px 0 var(--tinta); /* offset 4px, sin blur */
+  --sombra-dura-sm: 2px 2px 0 var(--tinta);
+  --radio: 4px; /* mínimo y consistente */
+
+  /* --- Tipografías --- */
+  --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  color-scheme: light;
+  font-family: var(--font-body);
+  color: var(--tinta);
+  background-color: var(--papel);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+body {
+  background-color: var(--papel);
+  /* Trama sutil de cuaderno cuadriculado de oficina */
+  background-image:
+    linear-gradient(var(--papel-hueco) 1px, transparent 1px),
+    linear-gradient(90deg, var(--papel-hueco) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--sello);
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+
+button {
+  font-family: var(--font-body);
+}
+
+/* --- Etiqueta mono: el aire de "documento mecanografiado" --- */
+.mono-tag {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* --- Tarjeta tablero de corcho --- */
+.card {
+  background: var(--papel);
+  border: var(--borde);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra-dura);
+}
+
+/* --- Botón de acción (único color: --sello) --- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 0.6rem 1.1rem;
+  color: var(--sello-tinta);
+  background: var(--sello);
+  border: var(--borde);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra-dura-sm);
+  cursor: pointer;
+  transition:
+    transform 0.05s ease,
+    box-shadow 0.05s ease;
+}
+.btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: var(--sombra-dura);
+}
+.btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+.btn:focus-visible {
+  outline: 3px solid var(--tinta);
+  outline-offset: 2px;
+}
+
+/* --- Sello de goma (signature element) --- */
+.sello-goma {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--sello);
+  border: 3px solid var(--sello);
+  border-radius: 6px;
+  padding: 0.15em 0.5em;
+  transform: rotate(-8deg);
+  opacity: 0.85;
+}
+
+/* --- Marcadores RAG (semáforo = marcador fluorescente) --- */
+.rag {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.1em 0.45em;
+  border: 2px solid var(--tinta);
+  border-radius: 3px;
+  color: var(--tinta);
+}
+.rag--rojo {
+  background: var(--rag-rojo);
+}
+.rag--ambar {
+  background: var(--rag-ambar);
+}
+.rag--verde {
+  background: var(--rag-verde);
+}
