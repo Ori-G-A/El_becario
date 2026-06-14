@@ -1,12 +1,13 @@
 import type { ReactNode } from 'react'
-import { Lock, LogOut, ListChecks, Tags } from 'lucide-react'
+import { Lock, LogOut, ListChecks, Tags, FolderKanban } from 'lucide-react'
 import { useAuth } from '../auth/useAuth'
 import { useLock } from '../lock/useLock'
 
-export type View = 'top12' | 'areas'
+export type View = 'top12' | 'iniciativas' | 'areas'
 
 const TABS: { id: View; label: string; icon: typeof ListChecks }[] = [
   { id: 'top12', label: 'Top 12', icon: ListChecks },
+  { id: 'iniciativas', label: 'Iniciativas', icon: FolderKanban },
   { id: 'areas', label: 'Áreas', icon: Tags },
 ]
 

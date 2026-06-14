@@ -9,6 +9,7 @@ export interface TareaInput {
   titulo: string
   responsable: string
   confidencial: boolean
+  iniciativa_id: string | null
 }
 
 async function fetchAreaMap(tareaIds: string[]): Promise<Map<string, string[]>> {

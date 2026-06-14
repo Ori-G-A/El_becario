@@ -8,6 +8,7 @@ import { ConfigScreen } from './screens/ConfigScreen'
 import { AppShell, type View } from './components/AppShell'
 import { AreasModule } from './areas/AreasModule'
 import { Top12Module } from './tareas/Top12Module'
+import { IniciativasModule } from './iniciativas/IniciativasModule'
 
 function LoadingScreen() {
   return (
@@ -29,7 +30,9 @@ function App() {
 
   return (
     <AppShell view={view} onNavigate={setView}>
-      {view === 'top12' ? <Top12Module /> : <AreasModule />}
+      {view === 'top12' && <Top12Module />}
+      {view === 'iniciativas' && <IniciativasModule />}
+      {view === 'areas' && <AreasModule />}
     </AppShell>
   )
 }

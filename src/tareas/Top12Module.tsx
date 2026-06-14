@@ -15,8 +15,9 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { Plus, Target } from 'lucide-react'
-import type { Area } from '../types/database'
+import type { Area, Iniciativa } from '../types/database'
 import { listAreas } from '../data/areas'
+import { listIniciativas } from '../data/iniciativas'
 import {
   type TareaConAreas,
   type TareaInput,
@@ -40,6 +41,7 @@ function esTopGoalHoy(t: TareaConAreas): boolean {
 
 export function Top12Module() {
   const [areas, setAreas] = useState<Area[]>([])
+  const [iniciativas, setIniciativas] = useState<Iniciativa[]>([])
   const [tareas, setTareas] = useState<TareaConAreas[]>([])
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
@@ -55,14 +57,19 @@ export function Top12Module() {
   )
 
   const areasById = useMemo(() => new Map(areas.map((a) => [a.id, a])), [areas])
+  const iniciativasById = useMemo(
+    () => new Map(iniciativas.map((i) => [i.id, i])),
+    [iniciativas],
+  )
   const topGoal = useMemo(() => tareas.find(esTopGoalHoy) ?? null, [tareas])
 
   async function load() {
     setLoading(true)
     setError(null)
     try {
-      const [a, t] = await Promise.all([listAreas(), listTop12()])
+      const [a, ini, t] = await Promise.all([listAreas(), listIniciativas(), listTop12()])
       setAreas(a)
+      setIniciativas(ini)
       setTareas(t)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No pude cargar el Top 12.')
@@ -215,6 +222,7 @@ export function Top12Module() {
         <TareaForm
           initial={form.editing}
           areas={areas}
+          iniciativas={iniciativas}
           busy={busy}
           onSave={handleSave}
           onCancel={() => setForm({ open: false, editing: null })}
@@ -255,6 +263,9 @@ export function Top12Module() {
                   tarea={t}
                   posicion={i + 1}
                   areasById={areasById}
+                  iniciativaNombre={
+                    t.iniciativa_id ? iniciativasById.get(t.iniciativa_id)?.nombre : undefined
+                  }
                   isTopGoal={esTopGoalHoy(t)}
                   busy={busy}
                   onEdit={() => setForm({ open: true, editing: t })}

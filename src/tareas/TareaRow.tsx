@@ -9,6 +9,7 @@ export function TareaRow({
   tarea,
   posicion,
   areasById,
+  iniciativaNombre,
   isTopGoal,
   busy,
   onEdit,
@@ -18,6 +19,7 @@ export function TareaRow({
   tarea: TareaConAreas
   posicion: number
   areasById: Map<string, Area>
+  iniciativaNombre?: string
   isTopGoal: boolean
   busy: boolean
   onEdit: () => void
@@ -84,6 +86,20 @@ export function TareaRow({
           <span className="mono-tag" style={{ opacity: 0.7 }}>
             {tarea.responsable}
           </span>
+          {iniciativaNombre && (
+            <span
+              className="mono-tag"
+              title="Iniciativa"
+              style={{
+                padding: '0.05rem 0.35rem',
+                border: '1.5px solid var(--tinta)',
+                borderRadius: 3,
+                opacity: 0.85,
+              }}
+            >
+              {iniciativaNombre}
+            </span>
+          )}
           <span style={{ display: 'inline-flex', gap: '0.25rem' }}>
             {tarea.area_ids.map((id) => {
               const area = areasById.get(id)

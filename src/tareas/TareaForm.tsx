@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Check, X, ShieldAlert } from 'lucide-react'
-import type { Area } from '../types/database'
+import type { Area, Iniciativa } from '../types/database'
 import type { TareaConAreas, TareaInput } from '../data/tareas'
 import { AreaIcon } from '../components/AreaIcon'
 import { inputStyle } from '../components/styles'
@@ -8,12 +8,14 @@ import { inputStyle } from '../components/styles'
 export function TareaForm({
   initial,
   areas,
+  iniciativas,
   busy,
   onSave,
   onCancel,
 }: {
   initial: TareaConAreas | null
   areas: Area[]
+  iniciativas: Iniciativa[]
   busy: boolean
   onSave: (input: TareaInput, areaIds: string[]) => void
   onCancel: () => void
@@ -21,6 +23,7 @@ export function TareaForm({
   const [titulo, setTitulo] = useState(initial?.titulo ?? '')
   const [responsable, setResponsable] = useState(initial?.responsable ?? 'yo')
   const [confidencial, setConfidencial] = useState(initial?.confidencial ?? false)
+  const [iniciativaId, setIniciativaId] = useState<string>(initial?.iniciativa_id ?? '')
   const [areaIds, setAreaIds] = useState<string[]>(initial?.area_ids ?? [])
   const [error, setError] = useState<string | null>(null)
 
@@ -36,7 +39,12 @@ export function TareaForm({
       return
     }
     onSave(
-      { titulo: limpio, responsable: responsable.trim() || 'yo', confidencial },
+      {
+        titulo: limpio,
+        responsable: responsable.trim() || 'yo',
+        confidencial,
+        iniciativa_id: iniciativaId || null,
+      },
       areaIds,
     )
   }
@@ -71,6 +79,23 @@ export function TareaForm({
         maxLength={80}
         style={{ ...inputStyle, marginBottom: '0.9rem' }}
       />
+
+      <label className="mono-tag" htmlFor="tarea-ini" style={{ display: 'block', marginBottom: '0.35rem' }}>
+        Iniciativa
+      </label>
+      <select
+        id="tarea-ini"
+        value={iniciativaId}
+        onChange={(e) => setIniciativaId(e.target.value)}
+        style={{ ...inputStyle, marginBottom: '0.9rem' }}
+      >
+        <option value="">Sin iniciativa</option>
+        {iniciativas.map((ini) => (
+          <option key={ini.id} value={ini.id}>
+            {ini.nombre}
+          </option>
+        ))}
+      </select>
 
       <p className="mono-tag" style={{ marginBottom: '0.4rem' }}>Áreas</p>
       {areas.length === 0 ? (
