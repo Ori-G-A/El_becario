@@ -63,6 +63,17 @@ export function minutosDesdeMedianoche(iso: string): number {
   return d.getHours() * 60 + d.getMinutes()
 }
 
+/** Día local (YYYY-MM-DD) de un timestamp ISO. */
+export function fechaLocalDeISO(iso: string): string {
+  return toISO(new Date(iso))
+}
+
+/** Lunes de la semana que contiene a `fechaISO` (YYYY-MM-DD). */
+export function lunesDe(fechaISO: string): string {
+  const [y, m, d] = fechaISO.split('-').map(Number)
+  return mondayISO(new Date(y, m - 1, d))
+}
+
 /** Límites [desde, hasta) del día en timestamps ISO. */
 export function diaBounds(fechaISO: string): { desde: string; hasta: string } {
   const [y, m, d] = fechaISO.split('-').map(Number)

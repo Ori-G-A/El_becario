@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase'
-import { diaBounds } from '../lib/date'
+import { diaBounds, addDays } from '../lib/date'
 import type { Bloque, TipoBloque } from '../types/database'
 
 export interface BloqueInput {
@@ -16,6 +16,20 @@ export interface BloqueInput {
 /** Bloques de un día (por su horario planeado), ordenados por inicio. */
 export async function listBloquesDelDia(fechaISO: string): Promise<Bloque[]> {
   const { desde, hasta } = diaBounds(fechaISO)
+  const { data, error } = await supabase
+    .from('bloque')
+    .select('*')
+    .gte('inicio', desde)
+    .lt('inicio', hasta)
+    .order('inicio', { ascending: true })
+  if (error) throw new Error(error.message)
+  return data ?? []
+}
+
+/** Bloques de la semana (lunes..domingo) que arranca en `lunesISO`. */
+export async function listBloquesDeSemana(lunesISO: string): Promise<Bloque[]> {
+  const desde = diaBounds(lunesISO).desde
+  const hasta = diaBounds(addDays(lunesISO, 6)).hasta
   const { data, error } = await supabase
     .from('bloque')
     .select('*')

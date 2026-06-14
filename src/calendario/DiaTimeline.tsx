@@ -2,14 +2,9 @@ import { createElement, type MouseEvent } from 'react'
 import { Shield, Bell } from 'lucide-react'
 import type { Bloque } from '../types/database'
 import { TIPO_BLOQUE } from '../lib/bloqueTipos'
-import { horaLocal, minutosDesdeMedianoche } from '../lib/date'
+import { horaLocal } from '../lib/date'
+import { ALTO_HORA, ALTO_TOTAL, HORAS, HORA_INICIO, bloqueTop, bloqueAlto, horaDesdeY } from '../lib/timeline'
 
-const HORA_INICIO = 6 // 6:00
-const HORA_FIN = 24 // medianoche
-const ALTO_HORA = 56 // px por hora
-const PX_POR_MIN = ALTO_HORA / 60
-const MIN_INICIO = HORA_INICIO * 60
-const ALTO_TOTAL = (HORA_FIN - HORA_INICIO) * ALTO_HORA
 const COL_IZQ = 54 // ancho de la columna de horas
 
 export function DiaTimeline({
@@ -21,16 +16,10 @@ export function DiaTimeline({
   onSelectBloque: (b: Bloque) => void
   onCrearEnHora: (hhmm: string) => void
 }) {
-  const horas = Array.from({ length: HORA_FIN - HORA_INICIO + 1 }, (_, i) => HORA_INICIO + i)
-
   function onBackgroundClick(e: MouseEvent<HTMLDivElement>) {
     const rect = e.currentTarget.getBoundingClientRect()
-    const y = e.clientY - rect.top
-    const minutos = MIN_INICIO + Math.round(y / PX_POR_MIN / 15) * 15
-    const h = Math.floor(minutos / 60)
-    const m = minutos % 60
-    if (h < HORA_INICIO || h >= HORA_FIN) return
-    onCrearEnHora(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`)
+    const hora = horaDesdeY(e.clientY - rect.top)
+    if (hora) onCrearEnHora(hora)
   }
 
   return (
@@ -38,13 +27,12 @@ export function DiaTimeline({
       className="card"
       style={{ position: 'relative', height: ALTO_TOTAL, padding: 0, overflow: 'hidden' }}
     >
-      {/* Capa de fondo: líneas de hora + click para crear */}
       <div
         onClick={onBackgroundClick}
         style={{ position: 'absolute', inset: 0, cursor: 'copy' }}
         aria-label="Toca para crear un bloque"
       >
-        {horas.map((h) => {
+        {HORAS.map((h) => {
           const top = (h - HORA_INICIO) * ALTO_HORA
           return (
             <div key={h} style={{ position: 'absolute', top, left: 0, right: 0 }}>
@@ -60,12 +48,7 @@ export function DiaTimeline({
         })}
       </div>
 
-      {/* Bloques */}
       {bloques.map((b) => {
-        const ini = minutosDesdeMedianoche(b.inicio)
-        const fin = minutosDesdeMedianoche(b.fin)
-        const top = Math.max(0, (ini - MIN_INICIO) * PX_POR_MIN)
-        const alto = Math.max(22, (fin - ini) * PX_POR_MIN - 2)
         const cfg = TIPO_BLOQUE[b.tipo]
         const completado = Boolean(b.real_inicio && b.real_fin)
         return (
@@ -75,10 +58,10 @@ export function DiaTimeline({
             onClick={() => onSelectBloque(b)}
             style={{
               position: 'absolute',
-              top,
+              top: bloqueTop(b.inicio),
               left: COL_IZQ + 4,
               right: 6,
-              height: alto,
+              height: bloqueAlto(b.inicio, b.fin),
               overflow: 'hidden',
               textAlign: 'left',
               padding: '0.25rem 0.45rem',
@@ -98,7 +81,7 @@ export function DiaTimeline({
               {b.protegido && <Shield size={12} aria-label="Protegido" />}
               {b.importante && <Bell size={12} aria-label="Importante" />}
             </div>
-            {alto > 30 && (
+            {bloqueAlto(b.inicio, b.fin) > 30 && (
               <span className="mono-tag" style={{ opacity: 0.6 }}>
                 {horaLocal(b.inicio)}–{horaLocal(b.fin)}
                 {completado ? ' · hecho' : ''}
