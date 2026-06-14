@@ -19,7 +19,8 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # Node 22+ trae WebSocket nativo (lo necesita @supabase/realtime-js).
+          node-version: 22
 
       - name: Cache de dependencias del emisor
         uses: actions/cache@v4
