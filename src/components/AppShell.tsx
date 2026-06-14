@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import {
   Lock,
   LogOut,
@@ -9,11 +9,17 @@ import {
   CalendarDays,
   LayoutDashboard,
   Download,
+  X,
 } from 'lucide-react'
 import { useAuth } from '../auth/useAuth'
 import { useLock } from '../lock/useLock'
 import { exportarBackup } from '../data/backup'
 import { AlertasBanner } from './AlertasBanner'
+import { useKonami, useLongPress } from '../easter/hooks'
+import { getCafes } from '../easter/cafe'
+import { CurriculumModal } from '../easter/CurriculumModal'
+import { RenunciaOverlay } from '../easter/RenunciaOverlay'
+import { CoffeeRing } from '../easter/CoffeeRing'
 
 export type View = 'calendario' | 'top12' | 'iniciativas' | 'areas' | 'revision' | 'panel'
 
@@ -39,6 +45,21 @@ export function AppShell({
   const { signOut } = useAuth()
   const { lock } = useLock()
   const [exportando, setExportando] = useState(false)
+
+  // Easter eggs
+  const [cvAbierto, setCvAbierto] = useState(false)
+  const [renuncia, setRenuncia] = useState(false)
+  const [cafes, setCafes] = useState(0)
+  const [horaRara, setHoraRara] = useState(false)
+  const logoLongPress = useLongPress(() => setCvAbierto(true))
+  useKonami(() => setRenuncia(true))
+
+  useEffect(() => {
+    getCafes().then(setCafes)
+    const h = new Date().getHours()
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (h < 6) setHoraRara(true)
+  }, [])
 
   async function respaldar() {
     setExportando(true)
@@ -69,7 +90,8 @@ export function AppShell({
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
           <span
-            aria-hidden
+            {...logoLongPress}
+            title="¿Mantén apretado…?"
             style={{
               display: 'grid',
               placeItems: 'center',
@@ -81,6 +103,9 @@ export function AppShell({
               fontFamily: 'var(--font-display)',
               fontWeight: 800,
               color: 'var(--sello)',
+              cursor: 'pointer',
+              userSelect: 'none',
+              touchAction: 'none',
             }}
           >
             B
@@ -163,9 +188,37 @@ export function AppShell({
       </nav>
 
       <main style={{ maxWidth: 760, margin: '0 auto', padding: '0.5rem 1rem 4rem' }}>
+        {horaRara && (
+          <div
+            className="card"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.6rem',
+              padding: '0.7rem 0.9rem',
+              marginBottom: '0.6rem',
+            }}
+          >
+            <span style={{ flex: 1 }}>
+              ¿Otra vez aquí a esta hora? Yo también debería estar durmiendo.
+            </span>
+            <button
+              type="button"
+              onClick={() => setHoraRara(false)}
+              aria-label="Descartar"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--tinta)' }}
+            >
+              <X size={16} aria-hidden />
+            </button>
+          </div>
+        )}
         <AlertasBanner />
         {children}
       </main>
+
+      <CoffeeRing />
+      {cvAbierto && <CurriculumModal cafes={cafes} onClose={() => setCvAbierto(false)} />}
+      {renuncia && <RenunciaOverlay onDone={() => setRenuncia(false)} />}
     </div>
   )
 }

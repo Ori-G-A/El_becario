@@ -21,6 +21,7 @@ import {
   setRealFin,
 } from '../data/bloques'
 import { listTop12, type TareaConAreas } from '../data/tareas'
+import { sumarCafe } from '../easter/cafe'
 import { BloqueForm } from './BloqueForm'
 import { DiaTimeline } from './DiaTimeline'
 import { SemanaTimeline } from './SemanaTimeline'
@@ -122,6 +123,10 @@ export function CalendarioModule() {
     try {
       if (campo === 'real_inicio') await setRealInicio(b.id, valor)
       else await setRealFin(b.id, valor)
+      // Café del becario: un Top Goal recién completado suma una taza.
+      if (campo === 'real_fin' && valor && b.tipo === 'top_goal' && b.real_inicio) {
+        void sumarCafe()
+      }
       setBloques((prev) => prev.map((x) => (x.id === b.id ? { ...x, [campo]: valor } : x)))
       setForm((f) =>
         f.editing && f.editing.id === b.id
