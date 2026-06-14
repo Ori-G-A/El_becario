@@ -172,6 +172,69 @@ export function tareasPorIniciativa(
   return res.sort((x, y) => y.hechas + y.pendientes - (x.hechas + x.pendientes))
 }
 
+export interface CruceAreaIni {
+  /** Filas: { nombre: iniciativa, [nombreArea]: horas, ... }. */
+  filas: Record<string, number | string>[]
+  /** Áreas presentes (claves de las barras apiladas), con su color. */
+  areas: { nombre: string; color: string }[]
+}
+
+/** Tiempo de cada iniciativa desglosado por área (bloque → tarea → iniciativa + áreas). */
+export function cruceAreaIniciativa(
+  bloques: Bloque[],
+  iniciativas: Iniciativa[],
+  areas: Area[],
+  tareas: { id: string; iniciativa_id: string | null }[],
+  tareaAreas: { tarea_id: string; area_id: string }[],
+): CruceAreaIni {
+  const iniPorId = new Map(iniciativas.map((i) => [i.id, i]))
+  const areaPorId = new Map(areas.map((a) => [a.id, a]))
+  const iniDeTarea = new Map(tareas.map((t) => [t.id, t.iniciativa_id]))
+  const areasDeTarea = new Map<string, string[]>()
+  for (const ta of tareaAreas) {
+    const l = areasDeTarea.get(ta.tarea_id) ?? []
+    l.push(ta.area_id)
+    areasDeTarea.set(ta.tarea_id, l)
+  }
+
+  const acc = new Map<string, Map<string, number>>()
+  const areasUsadas = new Set<string>()
+  for (const b of bloques) {
+    if (!b.tarea_id) continue
+    const iniId = iniDeTarea.get(b.tarea_id)
+    if (!iniId) continue
+    const areaIds = areasDeTarea.get(b.tarea_id) ?? []
+    if (areaIds.length === 0) continue
+    const min = duracionMin(b)
+    const m = acc.get(iniId) ?? new Map<string, number>()
+    for (const aid of areaIds) {
+      m.set(aid, (m.get(aid) ?? 0) + min)
+      areasUsadas.add(aid)
+    }
+    acc.set(iniId, m)
+  }
+
+  const areasList: { nombre: string; color: string }[] = []
+  for (const id of areasUsadas) {
+    const a = areaPorId.get(id)
+    if (a) areasList.push({ nombre: a.nombre, color: a.color })
+  }
+
+  const filas: Record<string, number | string>[] = []
+  for (const [iniId, m] of acc) {
+    const ini = iniPorId.get(iniId)
+    if (!ini) continue
+    const fila: Record<string, number | string> = { nombre: ini.nombre }
+    for (const [aid, min] of m) {
+      const a = areaPorId.get(aid)
+      if (a) fila[a.nombre] = +(min / 60).toFixed(1)
+    }
+    filas.push(fila)
+  }
+
+  return { filas, areas: areasList }
+}
+
 export interface RagSemana {
   label: string
   rag: EstadoRag | null

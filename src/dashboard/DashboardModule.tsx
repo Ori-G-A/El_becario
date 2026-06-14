@@ -21,6 +21,7 @@ import {
   type AvanceTop12,
   type TareasPorIni,
   type RagSemana,
+  type CruceAreaIni,
   serieSemanal,
   balanceAreas,
   tiempoPorIniciativa,
@@ -28,6 +29,7 @@ import {
   avanceTop12,
   tareasPorIniciativa,
   ragTrend,
+  cruceAreaIniciativa,
 } from '../lib/dashboard'
 import { listBloquesDesde } from '../data/bloques'
 import { listAreas } from '../data/areas'
@@ -75,6 +77,7 @@ export function DashboardModule() {
   const [avance, setAvance] = useState<AvanceTop12>({ hechas: 0, total: 0 })
   const [tareasIni, setTareasIni] = useState<TareasPorIni[]>([])
   const [ragSerie, setRagSerie] = useState<RagSemana[]>([])
+  const [cruce, setCruce] = useState<CruceAreaIni>({ filas: [], areas: [] })
   const [hayDatos, setHayDatos] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -109,6 +112,7 @@ export function DashboardModule() {
       setAvance(avanceTop12(tareas))
       setTareasIni(tareasPorIniciativa(iniciativas, tareas))
       setRagSerie(ragTrend(revisiones))
+      setCruce(cruceAreaIniciativa(recientes, iniciativas, areas, tareas, tareaAreas))
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No pude cargar el panel.')
     } finally {
@@ -339,6 +343,37 @@ export function DashboardModule() {
                   </div>
                 ))}
               </div>
+            )}
+          </Tarjeta>
+
+          <Tarjeta titulo="Área × iniciativa · últimas 4 semanas">
+            {cruce.filas.length === 0 ? (
+              <p className="mono-tag" style={{ opacity: 0.7 }}>
+                Hace falta tiempo en bloques de tareas que tengan iniciativa y área.
+              </p>
+            ) : (
+              <ResponsiveContainer width="100%" height={Math.max(160, cruce.filas.length * 46)}>
+                <BarChart
+                  data={cruce.filas}
+                  layout="vertical"
+                  margin={{ top: 4, right: 12, left: 8, bottom: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#D8D5C9" horizontal={false} />
+                  <XAxis type="number" tick={ejeTick} stroke={TINTA} />
+                  <YAxis type="category" dataKey="nombre" tick={ejeTick} stroke={TINTA} width={84} />
+                  <Tooltip contentStyle={tooltipStyle} formatter={(v, n) => [`${v} h`, n]} />
+                  <Legend wrapperStyle={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11 }} />
+                  {cruce.areas.map((a, i) => (
+                    <Bar
+                      key={a.nombre}
+                      dataKey={a.nombre}
+                      stackId="ai"
+                      fill={a.color}
+                      radius={i === cruce.areas.length - 1 ? [0, 3, 3, 0] : [0, 0, 0, 0]}
+                    />
+                  ))}
+                </BarChart>
+              </ResponsiveContainer>
             )}
           </Tarjeta>
         </>
