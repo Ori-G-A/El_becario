@@ -1,0 +1,55 @@
+import { supabase } from '../lib/supabase'
+import { diaBounds } from '../lib/date'
+import type { Bloque, TipoBloque } from '../types/database'
+
+export interface BloqueInput {
+  titulo: string
+  tarea_id: string | null
+  tipo: TipoBloque
+  inicio: string
+  fin: string
+  protegido: boolean
+  importante: boolean
+  aviso_min_antes: number | null
+}
+
+/** Bloques de un día (por su horario planeado), ordenados por inicio. */
+export async function listBloquesDelDia(fechaISO: string): Promise<Bloque[]> {
+  const { desde, hasta } = diaBounds(fechaISO)
+  const { data, error } = await supabase
+    .from('bloque')
+    .select('*')
+    .gte('inicio', desde)
+    .lt('inicio', hasta)
+    .order('inicio', { ascending: true })
+  if (error) throw new Error(error.message)
+  return data ?? []
+}
+
+export async function createBloque(input: BloqueInput): Promise<Bloque> {
+  const { data, error } = await supabase.from('bloque').insert(input).select().single()
+  if (error) throw new Error(error.message)
+  return data
+}
+
+export async function updateBloque(id: string, patch: Partial<BloqueInput>): Promise<void> {
+  const { error } = await supabase.from('bloque').update(patch).eq('id', id)
+  if (error) throw new Error(error.message)
+}
+
+export async function deleteBloque(id: string): Promise<void> {
+  const { error } = await supabase.from('bloque').delete().eq('id', id)
+  if (error) throw new Error(error.message)
+}
+
+/** Marca/desmarca el inicio real de un bloque (un toque). */
+export async function setRealInicio(id: string, valor: string | null): Promise<void> {
+  const { error } = await supabase.from('bloque').update({ real_inicio: valor }).eq('id', id)
+  if (error) throw new Error(error.message)
+}
+
+/** Marca/desmarca el fin real de un bloque (un toque). */
+export async function setRealFin(id: string, valor: string | null): Promise<void> {
+  const { error } = await supabase.from('bloque').update({ real_fin: valor }).eq('id', id)
+  if (error) throw new Error(error.message)
+}

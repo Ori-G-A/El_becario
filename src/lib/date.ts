@@ -27,3 +27,47 @@ export function formatFechaLarga(iso: string): string {
     year: 'numeric',
   })
 }
+
+/** "lunes 9 de junio" a partir de un YYYY-MM-DD. */
+export function nombreDia(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number)
+  return new Date(y, m - 1, d).toLocaleDateString('es', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  })
+}
+
+/** Suma `n` días a un YYYY-MM-DD (puede ser negativo). */
+export function addDays(iso: string, n: number): string {
+  const [y, m, d] = iso.split('-').map(Number)
+  return toISO(new Date(y, m - 1, d + n))
+}
+
+/** Combina un día (YYYY-MM-DD) y una hora (HH:MM) en un timestamp ISO local. */
+export function combinarFechaHora(fechaISO: string, hhmm: string): string {
+  const [y, m, d] = fechaISO.split('-').map(Number)
+  const [hh, mm] = hhmm.split(':').map(Number)
+  return new Date(y, m - 1, d, hh, mm).toISOString()
+}
+
+/** Hora local "HH:MM" de un timestamp ISO. */
+export function horaLocal(iso: string): string {
+  const d = new Date(iso)
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
+/** Minutos desde la medianoche (hora local) de un timestamp ISO. */
+export function minutosDesdeMedianoche(iso: string): number {
+  const d = new Date(iso)
+  return d.getHours() * 60 + d.getMinutes()
+}
+
+/** Límites [desde, hasta) del día en timestamps ISO. */
+export function diaBounds(fechaISO: string): { desde: string; hasta: string } {
+  const [y, m, d] = fechaISO.split('-').map(Number)
+  return {
+    desde: new Date(y, m - 1, d, 0, 0).toISOString(),
+    hasta: new Date(y, m - 1, d + 1, 0, 0).toISOString(),
+  }
+}

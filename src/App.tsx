@@ -10,6 +10,7 @@ import { AreasModule } from './areas/AreasModule'
 import { Top12Module } from './tareas/Top12Module'
 import { IniciativasModule } from './iniciativas/IniciativasModule'
 import { RevisionModule } from './revision/RevisionModule'
+import { CalendarioModule } from './calendario/CalendarioModule'
 
 function LoadingScreen() {
   return (
@@ -22,7 +23,7 @@ function LoadingScreen() {
 function App() {
   const { session, loading: authLoading } = useAuth()
   const { locked, loading: lockLoading } = useLock()
-  const [view, setView] = useState<View>('top12')
+  const [view, setView] = useState<View>('calendario')
 
   if (!isSupabaseConfigured) return <ConfigScreen />
   if (authLoading || lockLoading) return <LoadingScreen />
@@ -31,6 +32,7 @@ function App() {
 
   return (
     <AppShell view={view} onNavigate={setView}>
+      {view === 'calendario' && <CalendarioModule />}
       {view === 'top12' && <Top12Module />}
       {view === 'iniciativas' && <IniciativasModule />}
       {view === 'areas' && <AreasModule />}

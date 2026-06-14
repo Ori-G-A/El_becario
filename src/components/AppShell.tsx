@@ -6,15 +6,17 @@ import {
   Tags,
   FolderKanban,
   CalendarCheck,
+  CalendarDays,
   Download,
 } from 'lucide-react'
 import { useAuth } from '../auth/useAuth'
 import { useLock } from '../lock/useLock'
 import { exportarBackup } from '../data/backup'
 
-export type View = 'top12' | 'iniciativas' | 'areas' | 'revision'
+export type View = 'calendario' | 'top12' | 'iniciativas' | 'areas' | 'revision'
 
 const TABS: { id: View; label: string; icon: typeof ListChecks }[] = [
+  { id: 'calendario', label: 'Día', icon: CalendarDays },
   { id: 'top12', label: 'Top 12', icon: ListChecks },
   { id: 'iniciativas', label: 'Iniciativas', icon: FolderKanban },
   { id: 'areas', label: 'Áreas', icon: Tags },

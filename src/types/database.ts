@@ -8,6 +8,12 @@
 
 export type EstadoRag = 'rojo' | 'ambar' | 'verde'
 export type EstadoTarea = 'pendiente' | 'en_curso' | 'hecha'
+export type TipoBloque =
+  | 'top_goal'
+  | 'trabajo_profundo'
+  | 'reactivo'
+  | 'reunion'
+  | 'autocuidado'
 
 // NOTA: estos modelos son `type` (no `interface`) a propósito. Un `interface`
 // no es asignable a `Record<string, unknown>`, y el cliente de Supabase exige
@@ -67,6 +73,23 @@ export type RevisionSemanal = {
   semana: string
   rag_global: EstadoRag | null
   notas: string | null
+  creada_en: string
+  actualizada_en: string
+}
+
+export type Bloque = {
+  id: string
+  user_id: string
+  tarea_id: string | null
+  titulo: string
+  inicio: string
+  fin: string
+  real_inicio: string | null
+  real_fin: string | null
+  tipo: TipoBloque
+  protegido: boolean
+  importante: boolean
+  aviso_min_antes: number | null
   creada_en: string
   actualizada_en: string
 }
@@ -139,12 +162,31 @@ export interface Database {
         >,
         Partial<RevisionSemanal>
       >
+      bloque: Table<
+        Bloque,
+        WithDefaults<
+          Bloque,
+          | 'id'
+          | 'user_id'
+          | 'tarea_id'
+          | 'real_inicio'
+          | 'real_fin'
+          | 'tipo'
+          | 'protegido'
+          | 'importante'
+          | 'aviso_min_antes'
+          | 'creada_en'
+          | 'actualizada_en'
+        >,
+        Partial<Bloque>
+      >
     }
     Views: Record<string, never>
     Functions: Record<string, never>
     Enums: {
       estado_rag: EstadoRag
       estado_tarea: EstadoTarea
+      tipo_bloque: TipoBloque
     }
     CompositeTypes: Record<string, never>
   }
