@@ -40,7 +40,7 @@ export function BloqueForm({
   const [protegido, setProtegido] = useState(initial?.protegido ?? false)
   const [importante, setImportante] = useState(initial?.importante ?? false)
   const [aviso, setAviso] = useState<string>(
-    initial?.aviso_min_antes != null ? String(initial.aviso_min_antes) : '60',
+    initial?.aviso_min_antes != null ? String(initial.aviso_min_antes) : '10',
   )
   const [error, setError] = useState<string | null>(null)
 

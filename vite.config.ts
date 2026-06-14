@@ -7,17 +7,17 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      // injectManifest: escribimos nuestro propio SW (src/sw.ts) para manejar
+      // los eventos de push, conservando el precache de Workbox.
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.ts',
       registerType: 'autoUpdate',
-      // El SW se registra en dev para poder probar la instalación localmente.
-      devOptions: { enabled: true },
+      devOptions: { enabled: true, type: 'module' },
       includeAssets: ['favicon.svg', 'becario-icon.svg', 'apple-touch-icon.png'],
-      // SEGURIDAD: solo precacheamos el shell estático (JS/CSS/HTML/iconos).
-      // NO se define runtimeCaching para el dominio de Supabase, así que las
-      // respuestas con datos sensibles NUNCA quedan cacheadas offline en claro.
-      workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,woff2}'],
-        navigateFallback: 'index.html',
-        cleanupOutdatedCaches: true,
+      injectManifest: {
+        // SEGURIDAD: solo el shell estático. Nada de respuestas de Supabase.
+        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
       },
       manifest: {
         name: 'El Becario',

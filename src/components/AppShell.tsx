@@ -15,6 +15,7 @@ import { useAuth } from '../auth/useAuth'
 import { useLock } from '../lock/useLock'
 import { exportarBackup } from '../data/backup'
 import { AlertasBanner } from './AlertasBanner'
+import { NotificacionesToggle } from './NotificacionesToggle'
 import { useKonami, useLongPress } from '../easter/hooks'
 import { getCafes } from '../easter/cafe'
 import { CurriculumModal } from '../easter/CurriculumModal'
@@ -116,6 +117,7 @@ export function AppShell({
         </div>
 
         <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <NotificacionesToggle />
           <button
             type="button"
             className="btn"

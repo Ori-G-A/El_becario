@@ -73,7 +73,11 @@ export async function createBloque(input: BloqueInput): Promise<Bloque> {
 }
 
 export async function updateBloque(id: string, patch: Partial<BloqueInput>): Promise<void> {
-  const { error } = await supabase.from('bloque').update(patch).eq('id', id)
+  // Al editar, re-armamos el aviso por si cambió el horario o la importancia.
+  const { error } = await supabase
+    .from('bloque')
+    .update({ ...patch, aviso_enviado: false })
+    .eq('id', id)
   if (error) throw new Error(error.message)
 }
 

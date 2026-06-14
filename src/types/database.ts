@@ -78,6 +78,15 @@ export type RevisionSemanal = {
   actualizada_en: string
 }
 
+export type PushSubscriptionRow = {
+  id: string
+  user_id: string
+  endpoint: string
+  p256dh: string
+  auth: string
+  creada_en: string
+}
+
 export type Bloque = {
   id: string
   user_id: string
@@ -91,6 +100,7 @@ export type Bloque = {
   protegido: boolean
   importante: boolean
   aviso_min_antes: number | null
+  aviso_enviado: boolean
   creada_en: string
   actualizada_en: string
 }
@@ -176,10 +186,16 @@ export interface Database {
           | 'protegido'
           | 'importante'
           | 'aviso_min_antes'
+          | 'aviso_enviado'
           | 'creada_en'
           | 'actualizada_en'
         >,
         Partial<Bloque>
+      >
+      push_subscription: Table<
+        PushSubscriptionRow,
+        WithDefaults<PushSubscriptionRow, 'id' | 'user_id' | 'creada_en'>,
+        Partial<PushSubscriptionRow>
       >
     }
     Views: Record<string, never>
