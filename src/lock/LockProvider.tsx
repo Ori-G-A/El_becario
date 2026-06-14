@@ -11,6 +11,7 @@ import {
   setPin as persistPin,
   verifyPin,
 } from '../lib/pinStore'
+import { activarCripto, limpiarClave } from '../lib/cripto'
 import { LockContext, type LockContextValue } from './lock-context'
 
 /** Minutos de inactividad antes del auto-lock. */
@@ -32,17 +33,25 @@ export function LockProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
-  const lock = useCallback(() => setLocked(true), [])
+  const lock = useCallback(() => {
+    limpiarClave()
+    setLocked(true)
+  }, [])
 
   const createPin = useCallback(async (pin: string) => {
     await persistPin(pin)
     setHasPin(true)
+    // Derivar la clave de cifrado no debe bloquear el ingreso si falla.
+    await activarCripto(pin).catch(() => {})
     setLocked(false)
   }, [])
 
   const unlock = useCallback(async (pin: string) => {
     const ok = await verifyPin(pin)
-    if (ok) setLocked(false)
+    if (ok) {
+      await activarCripto(pin).catch(() => {})
+      setLocked(false)
+    }
     return ok
   }, [])
 
@@ -52,7 +61,10 @@ export function LockProvider({ children }: { children: ReactNode }) {
 
     const reset = () => {
       window.clearTimeout(timerRef.current)
-      timerRef.current = window.setTimeout(() => setLocked(true), AUTO_LOCK_MS)
+      timerRef.current = window.setTimeout(() => {
+        limpiarClave()
+        setLocked(true)
+      }, AUTO_LOCK_MS)
     }
 
     reset()

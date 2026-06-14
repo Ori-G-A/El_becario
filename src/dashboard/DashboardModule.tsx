@@ -100,8 +100,8 @@ export function DashboardModule() {
         <div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
           <p style={{ fontWeight: 600, marginBottom: '0.4rem' }}>Todavía no hay qué graficar.</p>
           <p style={{ opacity: 0.8 }}>
-            Agendá bloques en el calendario y marcá tus tiempos reales. En cuanto haya
-            un par de semanas, acá aparecen tus tendencias.
+            Agenda bloques en el calendario y marca tus tiempos reales. En cuanto haya
+            un par de semanas, aquí aparecen tus tendencias.
           </p>
         </div>
       ) : (

@@ -10,8 +10,8 @@ import { hashPin, randomSaltHex } from './crypto'
 import { kvGet, kvSet, kvDelete } from './kvStore'
 
 const PIN_KEY = 'app-lock-pin'
-export const PIN_MIN_LENGTH = 4
-export const PIN_MAX_LENGTH = 8
+export const PIN_MIN_LENGTH = 6
+export const PIN_MAX_LENGTH = 10
 
 interface StoredPin {
   salt: string

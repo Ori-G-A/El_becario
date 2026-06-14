@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase'
 import { todayISO } from '../lib/date'
+import { cifrarCampo, descifrarCampo } from '../lib/cripto'
 import type { Tarea } from '../types/database'
 
 /** Tarea junto con los ids de áreas que la clasifican. */
@@ -46,7 +47,14 @@ export async function listTop12(): Promise<TareaConAreas[]> {
   if (error) throw new Error(error.message)
   const tareas = data ?? []
   const areaMap = await fetchAreaMap(tareas.map((t) => t.id))
-  return tareas.map((t) => ({ ...t, area_ids: areaMap.get(t.id) ?? [] }))
+  return Promise.all(
+    tareas.map(async (t) => ({
+      ...t,
+      titulo: await descifrarCampo(t.titulo),
+      responsable: await descifrarCampo(t.responsable),
+      area_ids: areaMap.get(t.id) ?? [],
+    })),
+  )
 }
 
 /** El Top Goal marcado para hoy, si existe. */
@@ -71,14 +79,25 @@ export async function setTareaAreas(tareaId: string, areaIds: string[]): Promise
   if (ins.error) throw new Error(ins.error.message)
 }
 
+/** Cifra título y encargado si la tarea es confidencial; si no, los deja en claro. */
+async function prepararCampos(input: TareaInput): Promise<TareaInput> {
+  if (!input.confidencial) return input
+  return {
+    ...input,
+    titulo: await cifrarCampo(input.titulo),
+    responsable: await cifrarCampo(input.responsable),
+  }
+}
+
 export async function createTarea(
   input: TareaInput,
   areaIds: string[],
   orden: number,
 ): Promise<Tarea> {
+  const campos = await prepararCampos(input)
   const { data, error } = await supabase
     .from('tarea')
-    .insert({ ...input, es_top12: true, orden_top12: orden })
+    .insert({ ...campos, es_top12: true, orden_top12: orden })
     .select()
     .single()
   if (error) throw new Error(error.message)
@@ -91,7 +110,8 @@ export async function updateTarea(
   input: TareaInput,
   areaIds: string[],
 ): Promise<void> {
-  const { error } = await supabase.from('tarea').update(input).eq('id', id)
+  const campos = await prepararCampos(input)
+  const { error } = await supabase.from('tarea').update(campos).eq('id', id)
   if (error) throw new Error(error.message)
   await setTareaAreas(id, areaIds)
 }

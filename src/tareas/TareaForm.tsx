@@ -152,8 +152,12 @@ export function TareaForm({
         />
         <ShieldAlert size={16} aria-hidden />
         <span style={{ fontWeight: 600 }}>Confidencial</span>
-        <span className="mono-tag" style={{ opacity: 0.6 }}>(cifrado en Fase 3)</span>
       </label>
+      {confidencial && (
+        <p className="mono-tag" style={{ opacity: 0.7, margin: '-0.6rem 0 1rem', lineHeight: 1.4 }}>
+          Título y encargado se cifran con tu PIN. Si lo olvidas, no se recuperan.
+        </p>
+      )}
 
       {error && (
         <p style={{ color: 'var(--rag-rojo)', fontWeight: 600, marginBottom: '0.75rem' }}>{error}</p>

@@ -87,6 +87,12 @@ export type PushSubscriptionRow = {
   creada_en: string
 }
 
+export type UserCrypto = {
+  user_id: string
+  salt: string
+  creada_en: string
+}
+
 export type Bloque = {
   id: string
   user_id: string
@@ -196,6 +202,11 @@ export interface Database {
         PushSubscriptionRow,
         WithDefaults<PushSubscriptionRow, 'id' | 'user_id' | 'creada_en'>,
         Partial<PushSubscriptionRow>
+      >
+      user_crypto: Table<
+        UserCrypto,
+        WithDefaults<UserCrypto, 'user_id' | 'creada_en'>,
+        Partial<UserCrypto>
       >
     }
     Views: Record<string, never>

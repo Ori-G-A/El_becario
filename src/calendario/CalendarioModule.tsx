@@ -145,7 +145,8 @@ export function CalendarioModule() {
     setError(null)
     try {
       await createBloque({
-        titulo: tarea.titulo,
+        // El bloque no se cifra: si la tarea es confidencial, no copiamos su título.
+        titulo: tarea.confidencial ? 'Top Goal protegido' : tarea.titulo,
         tarea_id: tarea.id,
         tipo: 'top_goal',
         inicio: combinarFechaHora(fechaISO, '09:00'),
