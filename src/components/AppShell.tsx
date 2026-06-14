@@ -1,0 +1,77 @@
+import type { ReactNode } from 'react'
+import { Lock, LogOut } from 'lucide-react'
+import { useAuth } from '../auth/useAuth'
+import { useLock } from '../lock/useLock'
+
+/** Marco principal de la app: barra superior + contenido. */
+export function AppShell({ children }: { children: ReactNode }) {
+  const { signOut } = useAuth()
+  const { lock } = useLock()
+
+  return (
+    <div style={{ minHeight: '100vh' }}>
+      <header
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '1rem',
+          padding: '0.75rem 1rem',
+          borderBottom: 'var(--borde)',
+          background: 'var(--papel)',
+          position: 'sticky',
+          top: 0,
+          zIndex: 10,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <span
+            aria-hidden
+            style={{
+              display: 'grid',
+              placeItems: 'center',
+              width: 34,
+              height: 34,
+              border: '2.5px solid var(--sello)',
+              borderRadius: 6,
+              transform: 'rotate(-8deg)',
+              fontFamily: 'var(--font-display)',
+              fontWeight: 800,
+              color: 'var(--sello)',
+            }}
+          >
+            B
+          </span>
+          <strong style={{ fontFamily: 'var(--font-display)', fontSize: '1.15rem' }}>
+            El Becario
+          </strong>
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button
+            type="button"
+            className="btn"
+            onClick={lock}
+            title="Bloquear"
+            style={{ padding: '0.4rem 0.55rem' }}
+          >
+            <Lock size={16} aria-hidden />
+          </button>
+          <button
+            type="button"
+            className="btn"
+            onClick={signOut}
+            title="Cerrar sesión"
+            style={{ padding: '0.4rem 0.55rem' }}
+          >
+            <LogOut size={16} aria-hidden />
+          </button>
+        </div>
+      </header>
+
+      <main style={{ maxWidth: 760, margin: '0 auto', padding: '1.5rem 1rem 4rem' }}>
+        {children}
+      </main>
+    </div>
+  )
+}

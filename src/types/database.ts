@@ -9,7 +9,12 @@
 export type EstadoRag = 'rojo' | 'ambar' | 'verde'
 export type EstadoTarea = 'pendiente' | 'en_curso' | 'hecha'
 
-export interface Area {
+// NOTA: estos modelos son `type` (no `interface`) a propósito. Un `interface`
+// no es asignable a `Record<string, unknown>`, y el cliente de Supabase exige
+// esa forma (GenericTable) para inferir Row/Insert/Update; con interface, todo
+// degradaba a `never`.
+
+export type Area = {
   id: string
   user_id: string
   nombre: string
@@ -19,7 +24,7 @@ export interface Area {
   creada_en: string
 }
 
-export interface Iniciativa {
+export type Iniciativa = {
   id: string
   user_id: string
   nombre: string
@@ -33,7 +38,7 @@ export interface Iniciativa {
   actualizada_en: string
 }
 
-export interface Tarea {
+export type Tarea = {
   id: string
   user_id: string
   iniciativa_id: string | null
@@ -50,13 +55,13 @@ export interface Tarea {
   actualizada_en: string
 }
 
-export interface TareaArea {
+export type TareaArea = {
   tarea_id: string
   area_id: string
   user_id: string
 }
 
-export interface RevisionSemanal {
+export type RevisionSemanal = {
   id: string
   user_id: string
   semana: string
@@ -69,17 +74,24 @@ export interface RevisionSemanal {
 type WithDefaults<T, OptionalKeys extends keyof T> = Omit<T, OptionalKeys> &
   Partial<Pick<T, OptionalKeys>>
 
+type Table<TRow, TInsert, TUpdate> = {
+  Row: TRow
+  Insert: TInsert
+  Update: TUpdate
+  Relationships: []
+}
+
 export interface Database {
   public: {
     Tables: {
-      area: {
-        Row: Area
-        Insert: WithDefaults<Area, 'id' | 'user_id' | 'orden' | 'icono' | 'creada_en'>
-        Update: Partial<Area>
-      }
-      iniciativa: {
-        Row: Iniciativa
-        Insert: WithDefaults<
+      area: Table<
+        Area,
+        WithDefaults<Area, 'id' | 'user_id' | 'orden' | 'icono' | 'creada_en'>,
+        Partial<Area>
+      >
+      iniciativa: Table<
+        Iniciativa,
+        WithDefaults<
           Iniciativa,
           | 'id'
           | 'user_id'
@@ -91,12 +103,12 @@ export interface Database {
           | 'activa'
           | 'creada_en'
           | 'actualizada_en'
-        >
-        Update: Partial<Iniciativa>
-      }
-      tarea: {
-        Row: Tarea
-        Insert: WithDefaults<
+        >,
+        Partial<Iniciativa>
+      >
+      tarea: Table<
+        Tarea,
+        WithDefaults<
           Tarea,
           | 'id'
           | 'user_id'
@@ -111,22 +123,29 @@ export interface Database {
           | 'fecha'
           | 'creada_en'
           | 'actualizada_en'
-        >
-        Update: Partial<Tarea>
-      }
-      tarea_area: {
-        Row: TareaArea
-        Insert: WithDefaults<TareaArea, 'user_id'>
-        Update: Partial<TareaArea>
-      }
-      revision_semanal: {
-        Row: RevisionSemanal
-        Insert: WithDefaults<
+        >,
+        Partial<Tarea>
+      >
+      tarea_area: Table<
+        TareaArea,
+        WithDefaults<TareaArea, 'user_id'>,
+        Partial<TareaArea>
+      >
+      revision_semanal: Table<
+        RevisionSemanal,
+        WithDefaults<
           RevisionSemanal,
           'id' | 'user_id' | 'rag_global' | 'notas' | 'creada_en' | 'actualizada_en'
-        >
-        Update: Partial<RevisionSemanal>
-      }
+        >,
+        Partial<RevisionSemanal>
+      >
     }
+    Views: Record<string, never>
+    Functions: Record<string, never>
+    Enums: {
+      estado_rag: EstadoRag
+      estado_tarea: EstadoTarea
+    }
+    CompositeTypes: Record<string, never>
   }
 }
