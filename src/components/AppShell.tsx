@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ChangeEvent, type ReactNode } from 'react'
 import {
   Lock,
   LogOut,
@@ -9,11 +9,12 @@ import {
   CalendarDays,
   LayoutDashboard,
   Download,
+  Upload,
   X,
 } from 'lucide-react'
 import { useAuth } from '../auth/useAuth'
 import { useLock } from '../lock/useLock'
-import { exportarBackup } from '../data/backup'
+import { exportarBackup, restaurarBackupDesdeTexto } from '../data/backup'
 import { AlertasBanner } from './AlertasBanner'
 import { NotificacionesToggle } from './NotificacionesToggle'
 import { desactivarPush } from '../lib/push'
@@ -47,7 +48,9 @@ export function AppShell({
   const { signOut } = useAuth()
   const { lock } = useLock()
   const [exportando, setExportando] = useState(false)
+  const [restaurando, setRestaurando] = useState(false)
   const [saliendo, setSaliendo] = useState(false)
+  const restoreInputRef = useRef<HTMLInputElement | null>(null)
 
   // Easter eggs
   const [cvAbierto, setCvAbierto] = useState(false)
@@ -72,6 +75,28 @@ export function AppShell({
       window.alert(e instanceof Error ? e.message : 'No pude generar el respaldo.')
     } finally {
       setExportando(false)
+    }
+  }
+
+  async function restaurar(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+
+    const ok = window.confirm(
+      'Voy a restaurar este backup sobre la cuenta activa. No borro datos actuales, pero puedo actualizar filas que tengan el mismo id. ¿Seguimos?',
+    )
+    if (!ok) return
+
+    setRestaurando(true)
+    try {
+      const result = await restaurarBackupDesdeTexto(await file.text())
+      const total = Object.values(result.restored).reduce((acc, n) => acc + n, 0)
+      window.alert(`Restauracion lista. Filas procesadas: ${total}. Recarga la app si no ves los cambios.`)
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : 'No pude restaurar el respaldo.')
+    } finally {
+      setRestaurando(false)
     }
   }
 
@@ -148,6 +173,23 @@ export function AppShell({
           >
             <Download size={16} aria-hidden />
           </button>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => restoreInputRef.current?.click()}
+            disabled={restaurando}
+            title="Restaurar respaldo (JSON)"
+            style={{ padding: '0.4rem 0.55rem' }}
+          >
+            <Upload size={16} aria-hidden />
+          </button>
+          <input
+            ref={restoreInputRef}
+            type="file"
+            accept="application/json,.json"
+            onChange={restaurar}
+            style={{ display: 'none' }}
+          />
           <button
             type="button"
             className="btn"

@@ -76,4 +76,7 @@ supabase/
 
 - Secrets solo en env vars (Vercel / `.env.local`), nunca en el repo.
 - RLS en todas las tablas; el service worker no cachea datos de Supabase.
-- Export/backup JSON propio (Supabase Free no tiene backups automáticos).
+- Export/restore JSON propio (Supabase Free no tiene backups automáticos). La
+  restauración es incremental: no borra datos actuales y valida el salt de cifrado.
+- Headers de producción en `vercel.json`: CSP, anti-framing, nosniff, HSTS y
+  permisos del navegador restringidos.
