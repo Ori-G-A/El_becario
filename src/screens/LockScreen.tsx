@@ -17,10 +17,10 @@ export function LockScreen() {
   const [now, setNow] = useState(() => Date.now())
 
   useEffect(() => {
-    if (!lockedUntil || lockedUntil <= now) return
+    if (!lockedUntil || lockedUntil <= Date.now()) return
     const id = window.setInterval(() => setNow(Date.now()), 500)
     return () => window.clearInterval(id)
-  }, [lockedUntil, now])
+  }, [lockedUntil])
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()

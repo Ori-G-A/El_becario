@@ -12,7 +12,7 @@ PWA instalable de gestión de agenda semanal para uso personal. Tres esquemas:
 - **React + Vite + TypeScript**, como **PWA instalable** (`vite-plugin-pwa`).
 - **Supabase (Postgres)** como única fuente de verdad. Auth con **magic link**.
 - **RLS estricto** en todas las tablas (`user_id = auth.uid()`).
-- **App-lock con PIN (SHA-256)** guardado en el dispositivo (IndexedDB) + auto-lock.
+- **App-lock con PIN (PBKDF2-SHA-256)** guardado en el dispositivo (IndexedDB) + auto-lock.
 - **@dnd-kit** (drag-to-reorder), **Recharts** (gráficos), **Lucide React** (iconos).
 - Deploy en **Vercel**. Gestor de paquetes: **pnpm**.
 

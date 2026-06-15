@@ -1,7 +1,15 @@
 import { supabase } from '../lib/supabase'
 import { todayISO } from '../lib/date'
 
-const TABLAS = ['area', 'iniciativa', 'tarea', 'tarea_area', 'revision_semanal'] as const
+const TABLAS = [
+  'area',
+  'iniciativa',
+  'tarea',
+  'tarea_area',
+  'revision_semanal',
+  'bloque',
+  'user_crypto',
+] as const
 
 /**
  * Descarga TODOS tus datos como un JSON. Innegociable: el plan Free de Supabase
