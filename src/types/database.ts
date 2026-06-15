@@ -210,7 +210,16 @@ export interface Database {
       >
     }
     Views: Record<string, never>
-    Functions: Record<string, never>
+    Functions: {
+      registrar_push_subscription: {
+        Args: {
+          p_endpoint: string
+          p_p256dh: string
+          p_auth: string
+        }
+        Returns: undefined
+      }
+    }
     Enums: {
       estado_rag: EstadoRag
       estado_tarea: EstadoTarea

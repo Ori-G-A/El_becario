@@ -6,6 +6,8 @@ import { TIPO_BLOQUE, TIPOS_BLOQUE } from '../lib/bloqueTipos'
 import { combinarFechaHora, horaLocal, addDays } from '../lib/date'
 import { inputStyle } from '../components/styles'
 
+const AVISO_MAX_MIN = 7 * 24 * 60
+
 function masUnaHora(hhmm: string): string {
   const [h, m] = hhmm.split(':').map(Number)
   const total = (h + 1) % 24
@@ -64,6 +66,11 @@ export function BloqueForm({
     // (p. ej. sueño 23:00 → 07:00).
     const finFecha = horaFin <= horaInicio ? addDays(fechaISO, 1) : fechaISO
     const fin = combinarFechaHora(finFecha, horaFin)
+    const avisoMin = Number(aviso)
+    if (importante && (!Number.isInteger(avisoMin) || avisoMin < 0 || avisoMin > AVISO_MAX_MIN)) {
+      setError('El aviso debe estar entre 0 minutos y 7 días.')
+      return
+    }
     onSave({
       titulo: limpio,
       tarea_id: tareaId || null,
@@ -72,7 +79,7 @@ export function BloqueForm({
       fin,
       protegido,
       importante,
-      aviso_min_antes: importante ? Number(aviso) || 0 : null,
+      aviso_min_antes: importante ? avisoMin : null,
     })
   }
 
@@ -210,6 +217,7 @@ export function BloqueForm({
           <input
             type="number"
             min={0}
+            max={AVISO_MAX_MIN}
             value={aviso}
             onChange={(e) => setAviso(e.target.value)}
             style={{ ...inputStyle, width: 90 }}

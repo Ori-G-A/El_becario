@@ -2,9 +2,10 @@
   "name": "el-becario-push-sender",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@11.5.2",
   "description": "Emisor de avisos push (GitHub Action). Dependencias aisladas del proyecto.",
   "dependencies": {
-    "@supabase/supabase-js": "^2.108.1",
-    "web-push": "^3.6.7"
+    "@supabase/supabase-js": "2.108.1",
+    "web-push": "3.6.7"
   }
 }

@@ -11,9 +11,13 @@ concurrency:
   group: push-sender
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 jobs:
   send:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
 
@@ -22,19 +26,23 @@ jobs:
           # Node 22+ trae WebSocket nativo (lo necesita @supabase/realtime-js).
           node-version: 22
 
+      - name: Habilitar pnpm
+        run: corepack enable
+
       - name: Cache de dependencias del emisor
         uses: actions/cache@v4
         with:
           path: scripts/node_modules
-          key: push-deps-${{ hashFiles('scripts/package.json') }}
+          key: push-deps-${{ hashFiles('scripts/pnpm-lock.yaml') }}
 
       - name: Instalar dependencias
-        run: cd scripts && npm install --no-audit --no-fund
+        run: cd scripts && pnpm install --frozen-lockfile --prod
 
       - name: Enviar avisos
         run: node scripts/send-pushes.mjs
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           VAPID_PUBLIC_KEY: ${{ secrets.VAPID_PUBLIC_KEY }}
           VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}

@@ -15,6 +15,16 @@ interface PushData {
   tag?: string
 }
 
+function urlInterna(valor: string | undefined): string {
+  try {
+    const url = new URL(valor ?? '/', self.location.origin)
+    if (url.origin !== self.location.origin) return '/'
+    return `${url.pathname}${url.search}${url.hash}`
+  } catch {
+    return '/'
+  }
+}
+
 function leerPushData(event: PushEvent): PushData {
   try {
     return event.data?.json() ?? {}
@@ -33,7 +43,7 @@ self.addEventListener('push', (event) => {
       icon: '/pwa-192x192.png',
       badge: '/pwa-192x192.png',
       tag: data.tag,
-      data: data.url ?? '/',
+      data: urlInterna(data.url),
     }),
   )
 })

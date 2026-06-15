@@ -53,6 +53,13 @@ Copia `.env.test.example` a `.env.test` y usa un proyecto y una cuenta dedicados
 a pruebas. La suite valida `E2E_PROJECT_REF` y rechaza correos que no incluyan
 `e2e`, `test`, `qa` o `playwright`. La service role solo se lee desde Playwright.
 
+## Emisor push
+
+El workflow requiere `SUPABASE_URL`, `SUPABASE_PROJECT_REF`,
+`SUPABASE_SERVICE_ROLE_KEY`, `VAPID_PUBLIC_KEY` y `VAPID_PRIVATE_KEY` como
+secretos de GitHub. El project ref evita ejecutar la service role contra un
+proyecto distinto por un error de configuración.
+
 ## Estructura
 
 ```
