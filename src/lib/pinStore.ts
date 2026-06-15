@@ -2,21 +2,34 @@
  * App-lock con PIN — almacenamiento device-local.
  *
  * Guardamos solo { salt, hash } en IndexedDB. El PIN en claro nunca se persiste
- * ni viaja al servidor. En Fase 3, la clave de cifrado de campos Nivel 1 se
- * derivará del PIN (por eso vive client-side).
+ * ni viaja al servidor. El hash local usa PBKDF2; si existe un hash antiguo
+ * SHA-256, se migra al desbloquear correctamente.
  */
 
-import { hashPin, randomSaltHex } from './crypto'
+import { hashPin, pbkdf2PinHex, randomSaltHex } from './crypto'
 import { kvGet, kvSet, kvDelete } from './kvStore'
 
 const LEGACY_PIN_KEY = 'app-lock-pin'
 const pinKey = (userId: string) => `${LEGACY_PIN_KEY}:${userId}`
+const PIN_HASH_VERSION = 2
+const PIN_HASH_ITERATIONS = 310_000
 export const PIN_MIN_LENGTH = 6
 export const PIN_MAX_LENGTH = 10
 
-interface StoredPin {
+interface StoredPinV1 {
   salt: string
   hash: string
+}
+
+interface StoredPinV2 extends StoredPinV1 {
+  version: typeof PIN_HASH_VERSION
+  iterations: number
+}
+
+type StoredPin = StoredPinV1 | StoredPinV2
+
+function isStoredPinV2(stored: StoredPin): stored is StoredPinV2 {
+  return 'version' in stored && stored.version === PIN_HASH_VERSION
 }
 
 /** ¿Ya hay un PIN configurado para este usuario en este dispositivo? */
@@ -40,16 +53,29 @@ export async function hasPin(userId: string): Promise<boolean> {
 /** Crea o reemplaza el PIN local de un usuario. */
 export async function setPin(userId: string, pin: string): Promise<void> {
   const salt = randomSaltHex()
-  const hash = await hashPin(pin, salt)
-  await kvSet<StoredPin>(pinKey(userId), { salt, hash })
+  const hash = await pbkdf2PinHex(pin, salt, PIN_HASH_ITERATIONS)
+  await kvSet<StoredPinV2>(pinKey(userId), {
+    version: PIN_HASH_VERSION,
+    iterations: PIN_HASH_ITERATIONS,
+    salt,
+    hash,
+  })
 }
 
 /** Verifica un PIN contra el hash guardado. */
 export async function verifyPin(userId: string, pin: string): Promise<boolean> {
   const stored = await kvGet<StoredPin>(pinKey(userId))
   if (!stored) return false
-  const hash = await hashPin(pin, stored.salt)
-  return hash === stored.hash
+
+  if (isStoredPinV2(stored)) {
+    const hash = await pbkdf2PinHex(pin, stored.salt, stored.iterations)
+    return hash === stored.hash
+  }
+
+  const legacyHash = await hashPin(pin, stored.salt)
+  const ok = legacyHash === stored.hash
+  if (ok) await setPin(userId, pin)
+  return ok
 }
 
 /** Elimina el PIN del dispositivo (p. ej. al cerrar sesión y olvidar equipo). */
