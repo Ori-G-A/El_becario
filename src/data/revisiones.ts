@@ -1,5 +1,13 @@
 import { supabase } from '../lib/supabase'
+import { cifrarCampo, descifrarCampo } from '../lib/cripto'
 import type { EstadoRag, RevisionSemanal } from '../types/database'
+
+async function descifrarRevision(row: RevisionSemanal): Promise<RevisionSemanal> {
+  return {
+    ...row,
+    notas: row.notas ? await descifrarCampo(row.notas) : null,
+  }
+}
 
 export async function listRevisiones(): Promise<RevisionSemanal[]> {
   const { data, error } = await supabase
@@ -7,7 +15,7 @@ export async function listRevisiones(): Promise<RevisionSemanal[]> {
     .select('*')
     .order('semana', { ascending: false })
   if (error) throw new Error(error.message)
-  return data ?? []
+  return Promise.all((data ?? []).map(descifrarRevision))
 }
 
 export async function getRevision(semana: string): Promise<RevisionSemanal | null> {
@@ -17,7 +25,7 @@ export async function getRevision(semana: string): Promise<RevisionSemanal | nul
     .eq('semana', semana)
     .maybeSingle()
   if (error) throw new Error(error.message)
-  return data
+  return data ? descifrarRevision(data) : null
 }
 
 /** Crea o actualiza la revisión de una semana (única por user_id + semana). */
@@ -26,8 +34,9 @@ export async function upsertRevision(
   rag_global: EstadoRag | null,
   notas: string | null,
 ): Promise<void> {
+  const notasCifradas = notas ? await cifrarCampo(notas) : null
   const { error } = await supabase
     .from('revision_semanal')
-    .upsert({ semana, rag_global, notas }, { onConflict: 'user_id,semana' })
+    .upsert({ semana, rag_global, notas: notasCifradas }, { onConflict: 'user_id,semana' })
   if (error) throw new Error(error.message)
 }

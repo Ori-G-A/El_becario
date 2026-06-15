@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase'
+import { cifrarCampo, descifrarCampo } from '../lib/cripto'
 import type { EstadoRag, Iniciativa } from '../types/database'
 
 export interface IniciativaInput {
@@ -9,6 +10,38 @@ export interface IniciativaInput {
   estado_rag: EstadoRag
 }
 
+async function descifrarIniciativa(row: Iniciativa): Promise<Iniciativa> {
+  return {
+    ...row,
+    descripcion: row.descripcion ? await descifrarCampo(row.descripcion) : null,
+    stl_responsable: await descifrarCampo(row.stl_responsable),
+  }
+}
+
+async function prepararIniciativa(input: IniciativaInput): Promise<IniciativaInput> {
+  return {
+    ...input,
+    descripcion: input.descripcion ? await cifrarCampo(input.descripcion) : null,
+    stl_responsable: await cifrarCampo(input.stl_responsable),
+  }
+}
+
+async function prepararPatch(
+  patch: Partial<IniciativaInput>,
+): Promise<Partial<IniciativaInput>> {
+  return {
+    ...patch,
+    descripcion:
+      patch.descripcion === undefined || patch.descripcion === null
+        ? patch.descripcion
+        : await cifrarCampo(patch.descripcion),
+    stl_responsable:
+      patch.stl_responsable === undefined
+        ? undefined
+        : await cifrarCampo(patch.stl_responsable),
+  }
+}
+
 export async function listIniciativas(): Promise<Iniciativa[]> {
   const { data, error } = await supabase
     .from('iniciativa')
@@ -17,7 +50,7 @@ export async function listIniciativas(): Promise<Iniciativa[]> {
     .order('orden_prioridad', { ascending: true })
     .order('creada_en', { ascending: true })
   if (error) throw new Error(error.message)
-  return data ?? []
+  return Promise.all((data ?? []).map(descifrarIniciativa))
 }
 
 /** Todas las iniciativas (activas y finalizadas), activas primero. */
@@ -29,7 +62,7 @@ export async function listIniciativasTodas(): Promise<Iniciativa[]> {
     .order('orden_prioridad', { ascending: true })
     .order('creada_en', { ascending: true })
   if (error) throw new Error(error.message)
-  return data ?? []
+  return Promise.all((data ?? []).map(descifrarIniciativa))
 }
 
 /** Finaliza (activa=false) o reabre (activa=true) una iniciativa. */
@@ -42,20 +75,22 @@ export async function createIniciativa(
   input: IniciativaInput,
   orden: number,
 ): Promise<Iniciativa> {
+  const campos = await prepararIniciativa(input)
   const { data, error } = await supabase
     .from('iniciativa')
-    .insert({ ...input, orden_prioridad: orden })
+    .insert({ ...campos, orden_prioridad: orden })
     .select()
     .single()
   if (error) throw new Error(error.message)
-  return data
+  return descifrarIniciativa(data)
 }
 
 export async function updateIniciativa(
   id: string,
   patch: Partial<IniciativaInput>,
 ): Promise<void> {
-  const { error } = await supabase.from('iniciativa').update(patch).eq('id', id)
+  const campos = await prepararPatch(patch)
+  const { error } = await supabase.from('iniciativa').update(campos).eq('id', id)
   if (error) throw new Error(error.message)
 }
 
@@ -108,11 +143,12 @@ export async function seedIniciativasSugeridas(): Promise<number> {
   const faltan = INICIATIVAS_SUGERIDAS.filter((i) => !nombres.has(i.nombre.toLowerCase()))
   if (faltan.length === 0) return 0
   const base = existentes.length
-  const rows = faltan.map((i, idx) => ({
-    ...i,
-    estado_rag: 'ambar' as EstadoRag,
-    orden_prioridad: base + idx,
-  }))
+  const rows = await Promise.all(
+    faltan.map(async (i, idx) => ({
+      ...(await prepararIniciativa({ ...i, estado_rag: 'ambar' })),
+      orden_prioridad: base + idx,
+    })),
+  )
   const { error } = await supabase.from('iniciativa').insert(rows)
   if (error) throw new Error(error.message)
   return faltan.length

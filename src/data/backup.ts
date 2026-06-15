@@ -25,7 +25,7 @@ export async function exportarBackup(): Promise<void> {
 
   const backup = {
     app: 'El Becario',
-    schema_version: 1,
+    schema_version: 2,
     exported_at: new Date().toISOString(),
     data,
   }
