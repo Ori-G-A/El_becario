@@ -13,28 +13,28 @@ export interface BloqueInput {
   aviso_min_antes: number | null
 }
 
-/** Bloques de un día (por su horario planeado), ordenados por inicio. */
+/** Bloques que SOLAPAN un día (incluye los que cruzan medianoche), por inicio. */
 export async function listBloquesDelDia(fechaISO: string): Promise<Bloque[]> {
   const { desde, hasta } = diaBounds(fechaISO)
   const { data, error } = await supabase
     .from('bloque')
     .select('*')
-    .gte('inicio', desde)
     .lt('inicio', hasta)
+    .gt('fin', desde)
     .order('inicio', { ascending: true })
   if (error) throw new Error(error.message)
   return data ?? []
 }
 
-/** Bloques de la semana (lunes..domingo) que arranca en `lunesISO`. */
+/** Bloques que solapan la semana (lunes..domingo) que arranca en `lunesISO`. */
 export async function listBloquesDeSemana(lunesISO: string): Promise<Bloque[]> {
   const desde = diaBounds(lunesISO).desde
   const hasta = diaBounds(addDays(lunesISO, 6)).hasta
   const { data, error } = await supabase
     .from('bloque')
     .select('*')
-    .gte('inicio', desde)
     .lt('inicio', hasta)
+    .gt('fin', desde)
     .order('inicio', { ascending: true })
   if (error) throw new Error(error.message)
   return data ?? []

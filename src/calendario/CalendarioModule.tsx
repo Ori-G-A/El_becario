@@ -315,6 +315,7 @@ export function CalendarioModule() {
         <p className="mono-tag">Armando tu {modo === 'dia' ? 'día' : 'semana'}…</p>
       ) : modo === 'dia' ? (
         <DiaTimeline
+          fechaISO={fechaISO}
           bloques={bloques}
           onSelectBloque={abrirEdicion}
           onCrearEnHora={(hora) => abrirNuevo(fechaISO, hora)}

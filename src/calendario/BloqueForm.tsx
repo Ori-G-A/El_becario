@@ -3,7 +3,7 @@ import { Check, X, Shield, Bell } from 'lucide-react'
 import type { Bloque, TipoBloque } from '../types/database'
 import type { BloqueInput } from '../data/bloques'
 import { TIPO_BLOQUE, TIPOS_BLOQUE } from '../lib/bloqueTipos'
-import { combinarFechaHora, horaLocal } from '../lib/date'
+import { combinarFechaHora, horaLocal, addDays } from '../lib/date'
 import { inputStyle } from '../components/styles'
 
 function masUnaHora(hhmm: string): string {
@@ -60,11 +60,10 @@ export function BloqueForm({
       return
     }
     const inicio = combinarFechaHora(fechaISO, horaInicio)
-    const fin = combinarFechaHora(fechaISO, horaFin)
-    if (new Date(fin) <= new Date(inicio)) {
-      setError('El fin tiene que ser después del inicio.')
-      return
-    }
+    // Si el fin es menor o igual al inicio, el bloque termina al día siguiente
+    // (p. ej. sueño 23:00 → 07:00).
+    const finFecha = horaFin <= horaInicio ? addDays(fechaISO, 1) : fechaISO
+    const fin = combinarFechaHora(finFecha, horaFin)
     onSave({
       titulo: limpio,
       tarea_id: tareaId || null,
@@ -122,6 +121,12 @@ export function BloqueForm({
           />
         </div>
       </div>
+
+      {horaFin <= horaInicio && (
+        <p className="mono-tag" style={{ color: 'var(--sello)', margin: '-0.5rem 0 0.9rem' }}>
+          Termina al día siguiente (cruza la medianoche).
+        </p>
+      )}
 
       <p className="mono-tag" style={{ marginBottom: '0.4rem' }}>Tipo</p>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '0.9rem' }}>
