@@ -53,6 +53,9 @@ export function LockScreen() {
           setPin('')
         }
       }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No pude preparar la clave local.')
+      setPin('')
     } finally {
       setBusy(false)
     }

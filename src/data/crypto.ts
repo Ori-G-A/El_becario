@@ -15,6 +15,13 @@ export async function ensureSalt(): Promise<string> {
 
   const salt = saltAleatorioB64()
   const ins = await supabase.from('user_crypto').insert({ salt }).select('salt').single()
-  if (ins.error) throw new Error(ins.error.message)
+  if (ins.error) {
+    if (ins.error.code === '23505') {
+      const retry = await supabase.from('user_crypto').select('salt').maybeSingle()
+      if (retry.error) throw new Error(retry.error.message)
+      if (retry.data?.salt) return retry.data.salt
+    }
+    throw new Error(ins.error.message)
+  }
   return ins.data.salt
 }

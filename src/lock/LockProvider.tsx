@@ -74,8 +74,8 @@ export function LockProvider({ children }: { children: ReactNode }) {
     if (!userId) throw new Error('No hay una sesión activa para crear el PIN.')
     await persistPin(userId, pin)
     setHasPin(true)
-    // Derivar la clave de cifrado no debe bloquear el ingreso si falla.
-    await activarCripto(pin).catch(() => {})
+    // Sin clave de cifrado no abrimos: varios campos ya se guardan cifrados.
+    await activarCripto(pin)
     setLocked(false)
   }, [userId])
 
@@ -83,7 +83,7 @@ export function LockProvider({ children }: { children: ReactNode }) {
     if (!userId) return { ok: false, lockedUntil: null, attemptsLeft: 0 }
     const result = await verifyPin(userId, pin)
     if (result.ok) {
-      await activarCripto(pin).catch(() => {})
+      await activarCripto(pin)
       setLocked(false)
     }
     return result
