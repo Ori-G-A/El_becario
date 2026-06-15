@@ -1,22 +1,10 @@
 import { defineConfig, devices } from '@playwright/test'
-import { readFileSync, existsSync } from 'node:fs'
+import { loadEnv } from 'vite'
 
-// Carga simple de .env.local y .env.test en process.env (sin dependencias).
-function loadEnv(file: string) {
-  if (!existsSync(file)) return
-  for (const linea of readFileSync(file, 'utf8').split('\n')) {
-    const t = linea.trim()
-    if (!t || t.startsWith('#')) continue
-    const i = t.indexOf('=')
-    if (i === -1) continue
-    const k = t.slice(0, i).trim()
-    if (!process.env[k]) process.env[k] = t.slice(i + 1).trim()
-  }
+// Usa el parser de Vite para respetar comillas, escapes y precedencia dotenv.
+for (const [key, value] of Object.entries(loadEnv('test', process.cwd(), ''))) {
+  process.env[key] ??= value
 }
-loadEnv('.env.local')
-loadEnv('.env.test')
-
-const hayAuth = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY && process.env.E2E_EMAIL)
 
 export default defineConfig({
   testDir: './e2e',
@@ -35,17 +23,13 @@ export default defineConfig({
       testMatch: /(smoke|unit)\.spec\.ts/,
       use: { ...devices['Desktop Chrome'] },
     },
-    ...(hayAuth
-      ? [
-          { name: 'setup', testMatch: /auth\.setup\.ts/, use: { ...devices['Desktop Chrome'] } },
-          {
-            name: 'authed',
-            testMatch: /\.authed\.spec\.ts/,
-            dependencies: ['setup'],
-            use: { ...devices['Desktop Chrome'], storageState: 'e2e/.auth/state.json' },
-          },
-        ]
-      : []),
+    { name: 'setup', testMatch: /auth\.setup\.ts/, use: { ...devices['Desktop Chrome'] } },
+    {
+      name: 'authed',
+      testMatch: /\.authed\.spec\.ts/,
+      dependencies: ['setup'],
+      use: { ...devices['Desktop Chrome'], storageState: 'e2e/.auth/state.json' },
+    },
   ],
   webServer: {
     command: 'pnpm dev --port 5099 --strictPort',

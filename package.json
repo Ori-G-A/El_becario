@@ -4,13 +4,15 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
+    "dev": "vite --configLoader native",
+    "build": "tsc -b && vite build --configLoader native",
     "lint": "eslint .",
     "preview": "vite preview",
     "typecheck": "tsc -b --noEmit",
     "gen:icons": "node scripts/gen-icons.mjs",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:e2e:pub": "playwright test --project=pub",
+    "test:e2e:authed": "playwright test --project=authed"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

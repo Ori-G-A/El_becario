@@ -47,10 +47,24 @@ export async function activarPush(): Promise<void> {
 }
 
 export async function desactivarPush(): Promise<void> {
-  const reg = await navigator.serviceWorker.ready
+  if (!pushSoportado()) return
+  const reg = await navigator.serviceWorker.getRegistration()
+  if (!reg) return
   const sub = await reg.pushManager.getSubscription()
   if (sub) {
-    await borrarSubscripcion(sub.endpoint)
-    await sub.unsubscribe()
+    let primerError: unknown = null
+    try {
+      await borrarSubscripcion(sub.endpoint)
+    } catch (e) {
+      primerError = e
+    }
+
+    try {
+      await sub.unsubscribe()
+    } catch (e) {
+      primerError ??= e
+    }
+
+    if (primerError) throw primerError
   }
 }

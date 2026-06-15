@@ -38,3 +38,13 @@ test('el sueño que cruza la medianoche se puede agendar', async ({ page }) => {
   await page.getByRole('button', { name: /Borrar bloque/ }).click()
   await expect(page.getByRole('button', { name: new RegExp(titulo) })).toHaveCount(0)
 })
+
+test('cerrar sesión vuelve al acceso y no deja el escritorio abierto', async ({ page }) => {
+  await entrar(page)
+
+  await page.getByTitle('Cerrar sesión').click()
+
+  await expect(page.getByRole('heading', { name: 'El Becario' })).toBeVisible()
+  await expect(page.getByRole('button', { name: /Envíame el enlace/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Nuevo bloque' })).toHaveCount(0)
+})

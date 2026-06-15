@@ -36,11 +36,22 @@ pnpm dev
 | `pnpm preview` | Sirve el build localmente |
 | `pnpm lint` | ESLint |
 | `pnpm typecheck` | Solo chequeo de tipos |
+| `pnpm test:e2e:pub` | Tests públicos, sin secretos |
+| `pnpm test:e2e` | Suite completa, exige `.env.test` seguro |
 
 ## Base de datos
 
-El esquema completo con políticas RLS está en [`supabase/schema.sql`](supabase/schema.sql).
-**Revisalo antes de aplicarlo** en el SQL Editor de Supabase.
+Aplica [`supabase/schema.sql`](supabase/schema.sql) y luego las migraciones
+numeradas de `supabase/` en orden. Todas las tablas usan RLS y la migración 06
+refuerza que las relaciones también pertenezcan al mismo usuario.
+
+**Revisa cada SQL antes de aplicarlo** en el SQL Editor de Supabase.
+
+## Tests autenticados
+
+Copia `.env.test.example` a `.env.test` y usa un proyecto y una cuenta dedicados
+a pruebas. La suite valida `E2E_PROJECT_REF` y rechaza correos que no incluyan
+`e2e`, `test`, `qa` o `playwright`. La service role solo se lee desde Playwright.
 
 ## Estructura
 

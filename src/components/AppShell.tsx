@@ -16,6 +16,7 @@ import { useLock } from '../lock/useLock'
 import { exportarBackup } from '../data/backup'
 import { AlertasBanner } from './AlertasBanner'
 import { NotificacionesToggle } from './NotificacionesToggle'
+import { desactivarPush } from '../lib/push'
 import { useKonami, useLongPress } from '../easter/hooks'
 import { getCafes } from '../easter/cafe'
 import { CurriculumModal } from '../easter/CurriculumModal'
@@ -46,6 +47,7 @@ export function AppShell({
   const { signOut } = useAuth()
   const { lock } = useLock()
   const [exportando, setExportando] = useState(false)
+  const [saliendo, setSaliendo] = useState(false)
 
   // Easter eggs
   const [cvAbierto, setCvAbierto] = useState(false)
@@ -70,6 +72,24 @@ export function AppShell({
       window.alert(e instanceof Error ? e.message : 'No pude generar el respaldo.')
     } finally {
       setExportando(false)
+    }
+  }
+
+  async function cerrarSesion() {
+    setSaliendo(true)
+    lock()
+
+    try {
+      await desactivarPush()
+    } catch (e) {
+      // El cierre debe continuar, pero dejamos una señal diagnóstica.
+      console.warn('No se pudo retirar por completo la suscripción push.', e)
+    }
+
+    try {
+      await signOut()
+    } catch (e) {
+      window.alert(e instanceof Error ? e.message : 'No pude cerrar la sesión.')
     }
   }
 
@@ -140,7 +160,8 @@ export function AppShell({
           <button
             type="button"
             className="btn"
-            onClick={signOut}
+            onClick={cerrarSesion}
+            disabled={saliendo}
             title="Cerrar sesión"
             style={{ padding: '0.4rem 0.55rem' }}
           >
