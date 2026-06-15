@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus, Pencil, Trash2, Users, User, Check, RotateCcw } from 'lucide-react'
+import { Plus, Pencil, Trash2, Users, User, Check, RotateCcw, Sparkles } from 'lucide-react'
 import type { EstadoRag, Iniciativa } from '../types/database'
 import {
   type IniciativaInput,
@@ -9,6 +9,7 @@ import {
   setRag,
   setActivaIniciativa,
   deleteIniciativa,
+  seedIniciativasSugeridas,
 } from '../data/iniciativas'
 import { RagSelector } from '../components/RagSelector'
 import { IniciativaForm } from './IniciativaForm'
@@ -39,6 +40,20 @@ export function IniciativasModule() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     load()
   }, [])
+
+  async function handleSeed() {
+    setBusy(true)
+    setError(null)
+    try {
+      const n = await seedIniciativasSugeridas()
+      if (n === 0) setError('Las iniciativas sugeridas ya están cargadas.')
+      await load()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No pude cargar las sugeridas.')
+    } finally {
+      setBusy(false)
+    }
+  }
 
   async function handleSave(input: IniciativaInput) {
     setBusy(true)
@@ -113,10 +128,23 @@ export function IniciativasModule() {
           </span>
         </h1>
         {!form.open && (
-          <button type="button" className="btn" onClick={() => setForm({ open: true, editing: null })}>
-            <Plus size={16} aria-hidden />
-            Agregar
-          </button>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              className="btn"
+              onClick={handleSeed}
+              disabled={busy}
+              title="Crear las iniciativas por área que falten"
+              style={{ background: 'var(--papel)', color: 'var(--tinta)' }}
+            >
+              <Sparkles size={16} aria-hidden />
+              Sugeridas
+            </button>
+            <button type="button" className="btn" onClick={() => setForm({ open: true, editing: null })}>
+              <Plus size={16} aria-hidden />
+              Agregar
+            </button>
+          </div>
         )}
       </div>
 
