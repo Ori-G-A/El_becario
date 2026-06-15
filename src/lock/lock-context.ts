@@ -1,4 +1,5 @@
 import { createContext } from 'react'
+import type { VerifyPinResult } from '../lib/pinStore'
 
 export interface LockContextValue {
   /** ¿Está la app bloqueada y esperando el PIN? */
@@ -9,8 +10,8 @@ export interface LockContextValue {
   loading: boolean
   /** Crea el PIN por primera vez y desbloquea. */
   createPin: (pin: string) => Promise<void>
-  /** Intenta desbloquear; devuelve true si el PIN es correcto. */
-  unlock: (pin: string) => Promise<boolean>
+  /** Intenta desbloquear; devuelve estado de éxito/cooldown. */
+  unlock: (pin: string) => Promise<VerifyPinResult>
   /** Bloquea manualmente. */
   lock: () => void
 }

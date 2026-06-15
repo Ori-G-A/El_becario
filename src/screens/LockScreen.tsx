@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { Lock, Unlock } from 'lucide-react'
 import { useLock } from '../lock/useLock'
 import { PIN_MAX_LENGTH, PIN_MIN_LENGTH } from '../lib/pinStore'
@@ -13,6 +13,14 @@ export function LockScreen() {
   const [confirm, setConfirm] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [lockedUntil, setLockedUntil] = useState<number | null>(null)
+  const [now, setNow] = useState(() => Date.now())
+
+  useEffect(() => {
+    if (!lockedUntil || lockedUntil <= now) return
+    const id = window.setInterval(() => setNow(Date.now()), 500)
+    return () => window.clearInterval(id)
+  }, [lockedUntil, now])
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
@@ -32,9 +40,16 @@ export function LockScreen() {
         }
         await createPin(pin)
       } else {
-        const ok = await unlock(pin)
-        if (!ok) {
-          setError('PIN incorrecto. No dejo entrar a cualquiera.')
+        const result = await unlock(pin)
+        if (!result.ok) {
+          setLockedUntil(result.lockedUntil)
+          if (result.lockedUntil && result.lockedUntil > Date.now()) {
+            setError('Demasiados intentos. Espera un momento antes de probar otra vez.')
+          } else if (result.attemptsLeft > 0) {
+            setError(`PIN incorrecto. Te quedan ${result.attemptsLeft} intentos antes de una pausa.`)
+          } else {
+            setError('PIN incorrecto. No dejo entrar a cualquiera.')
+          }
           setPin('')
         }
       }
@@ -44,6 +59,9 @@ export function LockScreen() {
   }
 
   const creating = !hasPin
+  const remainingMs = lockedUntil ? Math.max(0, lockedUntil - now) : 0
+  const remainingSeconds = Math.ceil(remainingMs / 1000)
+  const lockedByAttempts = !creating && remainingMs > 0
 
   return (
     <AuthShell
@@ -99,14 +117,14 @@ export function LockScreen() {
 
         {error && (
           <p style={{ color: 'var(--rag-rojo)', fontWeight: 600, marginBottom: '0.75rem' }}>
-            {error}
+            {lockedByAttempts ? `${error} (${remainingSeconds}s)` : error}
           </p>
         )}
 
         <button
           type="submit"
           className="btn"
-          disabled={busy}
+          disabled={busy || lockedByAttempts}
           style={{ width: '100%', justifyContent: 'center' }}
         >
           {creating ? <Lock size={18} aria-hidden /> : <Unlock size={18} aria-hidden />}

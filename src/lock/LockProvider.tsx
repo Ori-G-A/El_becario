@@ -80,13 +80,13 @@ export function LockProvider({ children }: { children: ReactNode }) {
   }, [userId])
 
   const unlock = useCallback(async (pin: string) => {
-    if (!userId) return false
-    const ok = await verifyPin(userId, pin)
-    if (ok) {
+    if (!userId) return { ok: false, lockedUntil: null, attemptsLeft: 0 }
+    const result = await verifyPin(userId, pin)
+    if (result.ok) {
       await activarCripto(pin).catch(() => {})
       setLocked(false)
     }
-    return ok
+    return result
   }, [userId])
 
   // Auto-lock por inactividad: solo activo cuando está desbloqueada.
