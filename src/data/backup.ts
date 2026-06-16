@@ -139,7 +139,10 @@ async function upsertTabla(
     case 'tarea_area': {
       const { error } = await supabase
         .from('tarea_area')
-        .upsert(rows as TareaAreaInsert[], { onConflict: 'tarea_id,area_id' })
+        .upsert(rows as TareaAreaInsert[], {
+          ignoreDuplicates: true,
+          onConflict: 'tarea_id,area_id',
+        })
       if (error) throw new Error(`tarea_area: ${error.message}`)
       return rows.length
     }
