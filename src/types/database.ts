@@ -53,6 +53,9 @@ export type Tarea = {
   responsable: string
   estimacion_min: number | null
   estado: EstadoTarea
+  importante: boolean
+  urgente: boolean
+  top12_override: 'fijar' | 'excluir' | null
   es_top12: boolean
   es_top_goal: boolean
   orden_top12: number | null
@@ -156,6 +159,9 @@ export interface Database {
           | 'responsable'
           | 'estimacion_min'
           | 'estado'
+          | 'importante'
+          | 'urgente'
+          | 'top12_override'
           | 'es_top12'
           | 'es_top_goal'
           | 'orden_top12'

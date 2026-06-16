@@ -4,6 +4,53 @@ import type { Area, Iniciativa } from '../types/database'
 import type { TareaConAreas, TareaInput } from '../data/tareas'
 import { AreaIcon } from '../components/AreaIcon'
 import { inputStyle } from '../components/styles'
+import { cuadranteDe, metaCuadrante } from '../lib/eisenhower'
+
+/** Control sí/no de un solo eje (importante o urgente). */
+function EjeSiNo({
+  etiqueta,
+  valor,
+  onChange,
+}: {
+  etiqueta: string
+  valor: boolean
+  onChange: (v: boolean) => void
+}) {
+  return (
+    <div style={{ flex: 1, minWidth: 130 }}>
+      <p className="mono-tag" style={{ marginBottom: '0.35rem' }}>{etiqueta}</p>
+      <div style={{ display: 'flex', gap: '0.4rem' }}>
+        {[
+          { v: true, txt: 'Sí' },
+          { v: false, txt: 'No' },
+        ].map(({ v, txt }) => {
+          const on = valor === v
+          return (
+            <button
+              key={txt}
+              type="button"
+              onClick={() => onChange(v)}
+              aria-pressed={on}
+              style={{
+                flex: 1,
+                padding: '0.4rem 0.6rem',
+                fontWeight: 600,
+                border: 'var(--borde)',
+                borderRadius: 'var(--radio)',
+                background: on ? 'var(--tinta)' : 'var(--papel)',
+                color: on ? 'var(--papel)' : 'var(--tinta)',
+                boxShadow: on ? 'var(--sombra-dura-sm)' : 'none',
+                cursor: 'pointer',
+              }}
+            >
+              {txt}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
 
 export function TareaForm({
   initial,
@@ -25,7 +72,11 @@ export function TareaForm({
   const [confidencial, setConfidencial] = useState(initial?.confidencial ?? false)
   const [iniciativaId, setIniciativaId] = useState<string>(initial?.iniciativa_id ?? '')
   const [areaIds, setAreaIds] = useState<string[]>(initial?.area_ids ?? [])
+  const [importante, setImportante] = useState(initial?.importante ?? false)
+  const [urgente, setUrgente] = useState(initial?.urgente ?? false)
   const [error, setError] = useState<string | null>(null)
+
+  const meta = metaCuadrante(cuadranteDe({ importante, urgente }))
 
   function toggleArea(id: string) {
     setAreaIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
@@ -44,6 +95,8 @@ export function TareaForm({
         responsable: responsable.trim() || 'yo',
         confidencial,
         iniciativa_id: iniciativaId || null,
+        importante,
+        urgente,
       },
       areaIds,
     )
@@ -96,6 +149,26 @@ export function TareaForm({
           </option>
         ))}
       </select>
+
+      <div style={{ display: 'flex', gap: '0.7rem', flexWrap: 'wrap', marginBottom: '0.6rem' }}>
+        <EjeSiNo etiqueta="¿Importante?" valor={importante} onChange={setImportante} />
+        <EjeSiNo etiqueta="¿Urgente?" valor={urgente} onChange={setUrgente} />
+      </div>
+      <p
+        className="mono-tag"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.4rem',
+          marginBottom: '0.9rem',
+          padding: '0.2rem 0.5rem',
+          border: `2px solid ${meta.color}`,
+          borderRadius: 'var(--radio)',
+        }}
+      >
+        <span style={{ width: 9, height: 9, borderRadius: '50%', background: meta.color }} />
+        {meta.titulo} · {meta.pista}
+      </p>
 
       <p className="mono-tag" style={{ marginBottom: '0.4rem' }}>Áreas</p>
       {areas.length === 0 ? (
