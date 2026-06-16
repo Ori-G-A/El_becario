@@ -39,6 +39,75 @@ export interface RestoreResult {
   restored: Record<TablaRestaurable | 'user_crypto', number>
 }
 
+const COLUMNAS_PERMITIDAS: Record<TablaRestaurable, readonly string[]> = {
+  area: ['id', 'user_id', 'nombre', 'color', 'icono', 'orden', 'creada_en'],
+  iniciativa: [
+    'id',
+    'user_id',
+    'nombre',
+    'descripcion',
+    'stl_responsable',
+    'es_equipo',
+    'estado_rag',
+    'orden_prioridad',
+    'activa',
+    'creada_en',
+    'actualizada_en',
+  ],
+  tarea: [
+    'id',
+    'user_id',
+    'iniciativa_id',
+    'titulo',
+    'responsable',
+    'estimacion_min',
+    'estado',
+    'es_top12',
+    'es_top_goal',
+    'orden_top12',
+    'confidencial',
+    'fecha',
+    'creada_en',
+    'actualizada_en',
+  ],
+  tarea_area: ['tarea_id', 'area_id', 'user_id'],
+  revision_semanal: [
+    'id',
+    'user_id',
+    'semana',
+    'rag_global',
+    'notas',
+    'creada_en',
+    'actualizada_en',
+  ],
+  bloque: [
+    'id',
+    'user_id',
+    'tarea_id',
+    'titulo',
+    'inicio',
+    'fin',
+    'real_inicio',
+    'real_fin',
+    'tipo',
+    'protegido',
+    'importante',
+    'aviso_min_antes',
+    'aviso_enviado',
+    'creada_en',
+    'actualizada_en',
+  ],
+}
+
+const COLUMNAS_REQUERIDAS: Record<TablaRestaurable, readonly string[]> = {
+  area: ['id', 'nombre', 'color'],
+  iniciativa: ['id', 'nombre'],
+  tarea: ['id', 'titulo'],
+  tarea_area: ['tarea_id', 'area_id'],
+  revision_semanal: ['semana'],
+  bloque: ['id', 'titulo', 'inicio', 'fin'],
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
@@ -84,8 +153,24 @@ async function getUserId(): Promise<string> {
   return userId
 }
 
-function paraUsuario(row: Record<string, unknown>, userId: string): Record<string, unknown> {
-  return { ...row, user_id: userId }
+function sanearFila(
+  tabla: TablaRestaurable,
+  row: Record<string, unknown>,
+  userId: string,
+): Record<string, unknown> {
+  for (const columna of COLUMNAS_REQUERIDAS[tabla]) {
+    if (row[columna] === undefined || row[columna] === null || row[columna] === '') {
+      throw new Error(`Backup invalido: ${tabla} tiene una fila sin ${columna}.`)
+    }
+  }
+
+  const permitido = new Set(COLUMNAS_PERMITIDAS[tabla])
+  const limpia: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(row)) {
+    if (permitido.has(key)) limpia[key] = value
+  }
+  limpia.user_id = userId
+  return limpia
 }
 
 async function validarSalt(data: BackupData, userId: string): Promise<number> {
@@ -209,7 +294,7 @@ export async function restaurarBackupDesdeTexto(texto: string): Promise<RestoreR
   }
 
   for (const tabla of TABLAS_RESTAURABLES) {
-    const rows = asRows(data, tabla).map((row) => paraUsuario(row, userId))
+    const rows = asRows(data, tabla).map((row) => sanearFila(tabla, row, userId))
     restored[tabla] = await upsertTabla(tabla, rows)
   }
 
