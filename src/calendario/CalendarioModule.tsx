@@ -15,6 +15,7 @@ import {
   listBloquesDelDia,
   listBloquesDeSemana,
   createBloque,
+  createBloques,
   updateBloque,
   deleteBloque,
   setRealInicio,
@@ -84,14 +85,14 @@ export function CalendarioModule() {
     setForm({ open: true, editing: b, fecha: fechaLocalDeISO(b.inicio) })
   }
 
-  async function handleSave(input: BloqueInput) {
+  async function handleSave(inputs: BloqueInput[]) {
     setBusy(true)
     setError(null)
     try {
       if (form.editing) {
-        await updateBloque(form.editing.id, input)
+        await updateBloque(form.editing.id, inputs[0])
       } else {
-        await createBloque(input)
+        await createBloques(inputs)
       }
       setForm((f) => ({ ...f, open: false, editing: null }))
       await load(modo, fechaISO)

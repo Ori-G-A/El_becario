@@ -79,6 +79,27 @@ export function lunesDe(fechaISO: string): string {
   return mondayISO(new Date(y, m - 1, d))
 }
 
+/**
+ * Días (YYYY-MM-DD) entre `desdeISO` y `hastaISO` inclusive.
+ * `dias` = null → todos; si no, solo los getDay() incluidos (0=domingo … 6=sábado).
+ * Tope de seguridad de 366 iteraciones para no generar series infinitas.
+ */
+export function fechasEntre(
+  desdeISO: string,
+  hastaISO: string,
+  dias: number[] | null,
+): string[] {
+  const out: string[] = []
+  let cursor = desdeISO
+  for (let i = 0; i < 366 && cursor <= hastaISO; i++) {
+    const [y, m, d] = cursor.split('-').map(Number)
+    const dow = new Date(y, m - 1, d).getDay()
+    if (!dias || dias.includes(dow)) out.push(cursor)
+    cursor = addDays(cursor, 1)
+  }
+  return out
+}
+
 /** Límites [desde, hasta) del día en timestamps ISO. */
 export function diaBounds(fechaISO: string): { desde: string; hasta: string } {
   const [y, m, d] = fechaISO.split('-').map(Number)

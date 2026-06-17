@@ -3,7 +3,7 @@ import { Check, X, Shield, Bell } from 'lucide-react'
 import type { Bloque, TipoBloque } from '../types/database'
 import type { BloqueInput } from '../data/bloques'
 import { TIPO_BLOQUE, TIPOS_BLOQUE } from '../lib/bloqueTipos'
-import { combinarFechaHora, horaLocal, addDays } from '../lib/date'
+import { combinarFechaHora, horaLocal, addDays, fechasEntre } from '../lib/date'
 import { inputStyle } from '../components/styles'
 
 const AVISO_MAX_MIN = 7 * 24 * 60
@@ -28,7 +28,7 @@ export function BloqueForm({
   defaultHora?: string
   tareas: { id: string; titulo: string }[]
   busy: boolean
-  onSave: (input: BloqueInput) => void
+  onSave: (inputs: BloqueInput[]) => void
   onCancel: () => void
 }) {
   const horaInicialInicio = initial ? horaLocal(initial.inicio) : (defaultHora ?? '09:00')
@@ -44,7 +44,20 @@ export function BloqueForm({
   const [aviso, setAviso] = useState<string>(
     initial?.aviso_min_antes != null ? String(initial.aviso_min_antes) : '10',
   )
+  const [repetir, setRepetir] = useState<'no' | 'todos' | 'dias'>('no')
+  const [desde, setDesde] = useState(fechaISO)
+  const [hasta, setHasta] = useState(fechaISO)
+  const [diasSel, setDiasSel] = useState<Set<number>>(new Set())
   const [error, setError] = useState<string | null>(null)
+
+  function toggleDia(n: number) {
+    setDiasSel((prev) => {
+      const next = new Set(prev)
+      if (next.has(n)) next.delete(n)
+      else next.add(n)
+      return next
+    })
+  }
 
   function onTareaChange(id: string) {
     setTareaId(id)
@@ -61,26 +74,43 @@ export function BloqueForm({
       setError('Ponle un título al bloque.')
       return
     }
-    const inicio = combinarFechaHora(fechaISO, horaInicio)
-    // Si el fin es menor o igual al inicio, el bloque termina al día siguiente
-    // (p. ej. sueño 23:00 → 07:00).
-    const finFecha = horaFin <= horaInicio ? addDays(fechaISO, 1) : fechaISO
-    const fin = combinarFechaHora(finFecha, horaFin)
     const avisoMin = Number(aviso)
     if (importante && (!Number.isInteger(avisoMin) || avisoMin < 0 || avisoMin > AVISO_MAX_MIN)) {
       setError('El aviso debe estar entre 0 minutos y 7 días.')
       return
     }
-    onSave({
+
+    // Un bloque por fecha. Si el fin es menor o igual al inicio, cruza la
+    // medianoche y termina al día siguiente (p. ej. sueño 23:00 → 07:00).
+    const bloqueDe = (f: string): BloqueInput => ({
       titulo: limpio,
       tarea_id: tareaId || null,
       tipo,
-      inicio,
-      fin,
+      inicio: combinarFechaHora(f, horaInicio),
+      fin: combinarFechaHora(horaFin <= horaInicio ? addDays(f, 1) : f, horaFin),
       protegido,
       importante,
       aviso_min_antes: importante ? avisoMin : null,
     })
+
+    let fechas: string[] = [fechaISO]
+    if (!initial && repetir !== 'no') {
+      if (hasta < desde) {
+        setError('La fecha de fin tiene que ser igual o posterior a la de inicio.')
+        return
+      }
+      if (repetir === 'dias' && diasSel.size === 0) {
+        setError('Elegí al menos un día de la semana.')
+        return
+      }
+      fechas = fechasEntre(desde, hasta, repetir === 'todos' ? null : [...diasSel])
+      if (fechas.length === 0) {
+        setError('Ese rango no incluye ningún día de los que elegiste.')
+        return
+      }
+    }
+
+    onSave(fechas.map(bloqueDe))
   }
 
   return (
@@ -223,6 +253,87 @@ export function BloqueForm({
             style={{ ...inputStyle, width: 90 }}
           />
           <span className="mono-tag">min antes</span>
+        </div>
+      )}
+
+      {!initial && (
+        <div style={{ marginBottom: '1rem' }}>
+          <p className="mono-tag" style={{ marginBottom: '0.4rem' }}>Repetir</p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+            {([['no', 'Solo este día'], ['todos', 'Todos los días'], ['dias', 'Días específicos']] as const).map(
+              ([id, label]) => {
+                const on = repetir === id
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setRepetir(id)}
+                    aria-pressed={on}
+                    style={{
+                      padding: '0.3rem 0.6rem',
+                      border: 'var(--borde)',
+                      borderRadius: 'var(--radio)',
+                      background: on ? 'var(--tinta)' : 'var(--papel)',
+                      color: on ? 'var(--papel)' : 'var(--tinta)',
+                      boxShadow: on ? 'var(--sombra-dura-sm)' : 'none',
+                      cursor: 'pointer',
+                      fontWeight: 600,
+                      fontSize: '0.85rem',
+                    }}
+                  >
+                    {label}
+                  </button>
+                )
+              },
+            )}
+          </div>
+
+          {repetir === 'dias' && (
+            <div style={{ display: 'flex', gap: '0.3rem', marginTop: '0.7rem' }}>
+              {[{ n: 1, l: 'L' }, { n: 2, l: 'M' }, { n: 3, l: 'X' }, { n: 4, l: 'J' }, { n: 5, l: 'V' }, { n: 6, l: 'S' }, { n: 0, l: 'D' }].map(
+                (d) => {
+                  const on = diasSel.has(d.n)
+                  return (
+                    <button
+                      key={d.n}
+                      type="button"
+                      onClick={() => toggleDia(d.n)}
+                      aria-pressed={on}
+                      style={{
+                        width: 34,
+                        height: 34,
+                        border: 'var(--borde)',
+                        borderRadius: 'var(--radio)',
+                        background: on ? 'var(--sello)' : 'var(--papel)',
+                        color: on ? '#fff' : 'var(--tinta)',
+                        cursor: 'pointer',
+                        fontWeight: 700,
+                      }}
+                    >
+                      {d.l}
+                    </button>
+                  )
+                },
+              )}
+            </div>
+          )}
+
+          {repetir !== 'no' && (
+            <div style={{ display: 'flex', gap: '0.8rem', marginTop: '0.7rem' }}>
+              <div style={{ flex: 1 }}>
+                <label className="mono-tag" htmlFor="bloque-desde" style={{ display: 'block', marginBottom: '0.35rem' }}>
+                  Desde
+                </label>
+                <input id="bloque-desde" type="date" value={desde} onChange={(e) => setDesde(e.target.value)} style={inputStyle} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <label className="mono-tag" htmlFor="bloque-hasta" style={{ display: 'block', marginBottom: '0.35rem' }}>
+                  Hasta
+                </label>
+                <input id="bloque-hasta" type="date" value={hasta} min={desde} onChange={(e) => setHasta(e.target.value)} style={inputStyle} />
+              </div>
+            </div>
+          )}
         </div>
       )}
 

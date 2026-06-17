@@ -95,6 +95,14 @@ export async function createBloque(input: BloqueInput): Promise<Bloque> {
   return descifrarBloque(data)
 }
 
+/** Crea varios bloques de una (para series recurrentes). */
+export async function createBloques(inputs: BloqueInput[]): Promise<void> {
+  if (inputs.length === 0) return
+  const filas = await Promise.all(inputs.map(prepararBloque))
+  const { error } = await supabase.from('bloque').insert(filas)
+  if (error) throw new Error(error.message)
+}
+
 export async function updateBloque(id: string, patch: Partial<BloqueInput>): Promise<void> {
   // Al editar, re-armamos el aviso por si cambió el horario o la importancia.
   const campos = await prepararPatch(patch)
