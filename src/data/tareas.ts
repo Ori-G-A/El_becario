@@ -210,7 +210,7 @@ export async function sincronizarTop12(tareas: Tarea[]): Promise<boolean> {
     if (!esMiembroEstable(id)) ordenPlaneado.set(id, ++cursor)
   }
 
-  const updates: Promise<void>[] = []
+  const updates: PromiseLike<void>[] = []
   for (const t of tareas) {
     const enTop = enTopSet.has(t.id)
     const nuevoOrden = enTop ? (ordenPlaneado.get(t.id) ?? t.orden_top12) : null
