@@ -6,7 +6,15 @@ declare const self: ServiceWorkerGlobalScope & { __WB_MANIFEST: unknown[] }
 // --- Precache del shell (lo inyecta vite-plugin-pwa) ---
 cleanupOutdatedCaches()
 precacheAndRoute(self.__WB_MANIFEST)
+
+// El SW nuevo toma el control de inmediato: skipWaiting lo activa sin esperar a
+// que se cierren las pestañas, y clients.claim() reclama la PWA ya abierta. Eso
+// dispara 'controllerchange' en registerSW.js, que recarga a la versión nueva.
+// Sin el claim, una PWA instalada se queda pegada al bundle viejo para siempre.
 self.skipWaiting()
+self.addEventListener('activate', (event) => {
+  event.waitUntil(self.clients.claim())
+})
 
 interface PushData {
   title?: string
