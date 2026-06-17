@@ -286,6 +286,7 @@ export function CalendarioModule() {
       {form.open && (
         <>
           <BloqueForm
+            key={form.editing ? form.editing.id : 'nuevo'}
             initial={form.editing}
             fechaISO={form.fecha}
             defaultHora={form.hora}
