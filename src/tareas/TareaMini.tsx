@@ -43,6 +43,7 @@ export function TareaMini({
         alignItems: 'center',
         gap: '0.45rem',
         padding: '0.45rem 0.55rem',
+        minWidth: 0,
         opacity: hecha ? 0.55 : 1,
       }}
     >

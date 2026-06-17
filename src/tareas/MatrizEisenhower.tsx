@@ -39,7 +39,7 @@ export function MatrizEisenhower({
           <section
             key={meta.id}
             className="card"
-            style={{ padding: '0.8rem', borderTop: `5px solid ${meta.color}` }}
+            style={{ padding: '0.8rem', borderTop: `5px solid ${meta.color}`, minWidth: 0 }}
           >
             <header style={{ marginBottom: '0.6rem' }}>
               <strong style={{ fontFamily: 'var(--font-display)', fontSize: '1.05rem' }}>
