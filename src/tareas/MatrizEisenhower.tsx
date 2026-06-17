@@ -9,8 +9,10 @@ export function MatrizEisenhower({
   areasById,
   seleccion,
   rangoPorId,
+  topGoalId,
   busy,
   onToggleHecha,
+  onToggleTopGoal,
   onEdit,
   onDelete,
   onSetOverride,
@@ -19,8 +21,10 @@ export function MatrizEisenhower({
   areasById: Map<string, Area>
   seleccion: Set<string>
   rangoPorId: Map<string, number>
+  topGoalId: string | null
   busy: boolean
   onToggleHecha: (t: TareaConAreas) => void
+  onToggleTopGoal: (t: TareaConAreas) => void
   onEdit: (t: TareaConAreas) => void
   onDelete: (t: TareaConAreas) => void
   onSetOverride: (t: TareaConAreas, override: 'fijar' | 'excluir' | null) => void
@@ -63,8 +67,10 @@ export function MatrizEisenhower({
                     areasById={areasById}
                     enTop12={seleccion.has(t.id)}
                     rango={rangoPorId.get(t.id)}
+                    esTopGoal={t.id === topGoalId}
                     busy={busy}
                     onToggleHecha={() => onToggleHecha(t)}
+                    onToggleTopGoal={() => onToggleTopGoal(t)}
                     onEdit={() => onEdit(t)}
                     onDelete={() => onDelete(t)}
                     onSetOverride={(o) => onSetOverride(t, o)}

@@ -1,4 +1,4 @@
-import { Pencil, Trash2, ShieldAlert, CheckCircle2, Circle, Pin, Ban } from 'lucide-react'
+import { Pencil, Trash2, ShieldAlert, CheckCircle2, Circle, Pin, Ban, Target } from 'lucide-react'
 import type { Area } from '../types/database'
 import type { TareaConAreas } from '../data/tareas'
 import { AreaIcon } from '../components/AreaIcon'
@@ -9,8 +9,10 @@ export function TareaMini({
   areasById,
   enTop12,
   rango,
+  esTopGoal,
   busy,
   onToggleHecha,
+  onToggleTopGoal,
   onEdit,
   onDelete,
   onSetOverride,
@@ -19,8 +21,10 @@ export function TareaMini({
   areasById: Map<string, Area>
   enTop12: boolean
   rango?: number
+  esTopGoal: boolean
   busy: boolean
   onToggleHecha: () => void
+  onToggleTopGoal: () => void
   onEdit: () => void
   onDelete: () => void
   onSetOverride: (override: 'fijar' | 'excluir' | null) => void
@@ -85,9 +89,7 @@ export function TareaMini({
           <strong
             style={{
               fontSize: '0.92rem',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
+              overflowWrap: 'anywhere',
               textDecoration: hecha ? 'line-through' : 'none',
             }}
           >
@@ -121,6 +123,19 @@ export function TareaMini({
         )}
       </div>
 
+      {enTop12 && (
+        <button
+          type="button"
+          className="btn"
+          onClick={onToggleTopGoal}
+          disabled={busy}
+          aria-pressed={esTopGoal}
+          title={esTopGoal ? 'Quitar de Top Goal' : 'Marcar como Top Goal de hoy'}
+          style={iconBtn(esTopGoal)}
+        >
+          <Target size={14} aria-hidden />
+        </button>
+      )}
       <button
         type="button"
         className="btn"

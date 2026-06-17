@@ -376,8 +376,10 @@ export function Top12Module() {
           areasById={areasById}
           seleccion={seleccion}
           rangoPorId={rangoPorId}
+          topGoalId={topGoal?.id ?? null}
           busy={busy}
           onToggleHecha={handleToggleHecha}
+          onToggleTopGoal={handleToggleTopGoal}
           onEdit={(t) => setForm({ open: true, editing: t })}
           onDelete={handleDelete}
           onSetOverride={handleSetOverride}
