@@ -66,6 +66,10 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
 
 const AVISO_DEFAULT_MIN = 10
 const AVISO_MAX_MIN = 7 * 24 * 60
+// El cron de GitHub se atrasa mucho (corre cada ~2 h en vez de cada 5 min).
+// Toleramos ese atraso: seguimos avisando hasta GRACIA_MIN después del inicio,
+// así un bloque no se pierde solo porque el cron despertó tarde.
+const GRACIA_MIN = 120
 const ahora = Date.now()
 const horizonte = ahora + AVISO_MAX_MIN * 60_000
 
@@ -74,13 +78,15 @@ const { data: bloques, error } = await supabase
   .select('id, user_id, inicio, aviso_min_antes')
   .eq('importante', true)
   .eq('aviso_enviado', false)
-  .gte('inicio', new Date(ahora).toISOString())
+  .gte('inicio', new Date(ahora - GRACIA_MIN * 60_000).toISOString())
   .lte('inicio', new Date(horizonte).toISOString())
 if (error) {
   console.error('Error leyendo bloques:', error.message)
   process.exit(1)
 }
 
+// Debido = ya es hora de avisar (faltan <= ventana, o empezó hace poco y aún
+// no se mandó). El filtro de inicio de arriba acota la gracia hacia atrás.
 const debidos = (bloques ?? []).filter((bloque) => {
   const inicio = new Date(bloque.inicio).getTime()
   const ventanaMs = (bloque.aviso_min_antes ?? AVISO_DEFAULT_MIN) * 60_000
