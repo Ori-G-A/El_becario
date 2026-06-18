@@ -11,6 +11,7 @@ const ITERACIONES = 210_000
 
 let claveActual: CryptoKey | null = null
 
+// ponytail: vivo para gatear la UX de "desbloqueá el PIN para ver lo confidencial".
 export function tieneClave(): boolean {
   return claveActual !== null
 }
@@ -60,7 +61,7 @@ export async function activarCripto(pin: string): Promise<void> {
   claveActual = await deriveKey(pin, salt)
 }
 
-export function estaCifrado(valor: string | null | undefined): boolean {
+function estaCifrado(valor: string | null | undefined): boolean {
   return typeof valor === 'string' && valor.startsWith(PREFIJO)
 }
 

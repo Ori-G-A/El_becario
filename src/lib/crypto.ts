@@ -10,7 +10,7 @@ function toHex(buffer: ArrayBuffer): string {
 }
 
 /** Hash SHA-256 (hex) de un string. */
-export async function sha256Hex(input: string): Promise<string> {
+async function sha256Hex(input: string): Promise<string> {
   const bytes = new TextEncoder().encode(input)
   const digest = await crypto.subtle.digest('SHA-256', bytes)
   return toHex(digest)

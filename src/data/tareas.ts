@@ -91,18 +91,6 @@ export async function listTareasConAreas(): Promise<TareaConAreas[]> {
   return hidratarTareas(data ?? [])
 }
 
-/** El Top Goal marcado para hoy, si existe. */
-export async function getTopGoalDeHoy(): Promise<Tarea | null> {
-  const { data, error } = await supabase
-    .from('tarea')
-    .select('*')
-    .eq('es_top_goal', true)
-    .eq('fecha', todayISO())
-    .maybeSingle()
-  if (error) throw new Error(error.message)
-  return data
-}
-
 /** Reemplaza el conjunto de áreas de una tarea. */
 export async function setTareaAreas(tareaId: string, areaIds: string[]): Promise<void> {
   const del = await supabase.from('tarea_area').delete().eq('tarea_id', tareaId)
@@ -152,6 +140,7 @@ export async function setEstadoTarea(id: string, estado: EstadoTarea): Promise<v
 }
 
 /** Cambia el cuadrante de Eisenhower (importante × urgente). */
+// ponytail: vivo para el arrastre de tareas entre cuadrantes en la matriz.
 export async function setCuadrante(
   id: string,
   importante: boolean,

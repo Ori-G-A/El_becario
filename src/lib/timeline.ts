@@ -3,7 +3,7 @@ export const HORA_INICIO = 0
 export const HORA_FIN = 24
 export const ALTO_HORA = 48 // px por hora
 export const PX_POR_MIN = ALTO_HORA / 60
-export const MIN_INICIO = HORA_INICIO * 60
+const MIN_INICIO = HORA_INICIO * 60
 export const ALTO_TOTAL = (HORA_FIN - HORA_INICIO) * ALTO_HORA
 export const HORAS = Array.from(
   { length: HORA_FIN - HORA_INICIO + 1 },

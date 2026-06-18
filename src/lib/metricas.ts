@@ -16,13 +16,8 @@ function realMin(b: Bloque): number | null {
   return b.real_inicio && b.real_fin ? minutosEntre(b.real_inicio, b.real_fin) : null
 }
 /** Duración efectiva: la real si está registrada, si no la planeada. */
-function dur(b: Bloque): number {
-  return realMin(b) ?? planMin(b)
-}
-
-/** Duración efectiva de un bloque en minutos (real si está, si no planeada). */
 export function duracionMin(b: Bloque): number {
-  return dur(b)
+  return realMin(b) ?? planMin(b)
 }
 
 export interface MetricasSemana {
@@ -43,8 +38,8 @@ export function calcularMetricas(bloques: Bloque[]): MetricasSemana {
   let minProfundo = 0
   let minReactivo = 0
   for (const b of bloques) {
-    if (PROFUNDO.includes(b.tipo)) minProfundo += dur(b)
-    else if (REACTIVO.includes(b.tipo)) minReactivo += dur(b)
+    if (PROFUNDO.includes(b.tipo)) minProfundo += duracionMin(b)
+    else if (REACTIVO.includes(b.tipo)) minReactivo += duracionMin(b)
   }
   const minTrabajo = minProfundo + minReactivo
 
