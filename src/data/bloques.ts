@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase'
-import { diaBounds, addDays } from '../lib/date'
+import { diaBounds, addDays, combinarFechaHora, fechaLocalDeISO, horaLocal } from '../lib/date'
 import { cifrarCampo, descifrarCampo } from '../lib/cripto'
 import type { Bloque, TipoBloque } from '../types/database'
 
@@ -95,11 +95,61 @@ export async function createBloque(input: BloqueInput): Promise<Bloque> {
   return descifrarBloque(data)
 }
 
-/** Crea varios bloques de una (para series recurrentes). */
+/** Crea varios bloques de una (para series recurrentes); les pone un serie_id común. */
 export async function createBloques(inputs: BloqueInput[]): Promise<void> {
   if (inputs.length === 0) return
-  const filas = await Promise.all(inputs.map(prepararBloque))
+  // Un solo bloque no forma serie (serie_id nulo = suelto).
+  const serie_id = inputs.length > 1 ? crypto.randomUUID() : null
+  const filas = await Promise.all(
+    inputs.map(async (i) => ({ ...(await prepararBloque(i)), serie_id })),
+  )
   const { error } = await supabase.from('bloque').insert(filas)
+  if (error) throw new Error(error.message)
+}
+
+/**
+ * Aplica los cambios a TODOS los bloques de una serie. Conserva la fecha propia
+ * de cada bloque y solo le cambia la hora del día (más título, tipo, etc.).
+ */
+export async function updateSerie(serieId: string, input: BloqueInput): Promise<void> {
+  const { data, error } = await supabase
+    .from('bloque')
+    .select('id, inicio')
+    .eq('serie_id', serieId)
+  if (error) throw new Error(error.message)
+
+  const horaIni = horaLocal(input.inicio)
+  const horaFin = horaLocal(input.fin)
+  const cruzaMedianoche = fechaLocalDeISO(input.fin) !== fechaLocalDeISO(input.inicio)
+  const titulo = (await prepararBloque(input)).titulo // cifra una vez; mismo contenido
+
+  await Promise.all(
+    (data ?? []).map((b) => {
+      const f = fechaLocalDeISO(b.inicio)
+      return supabase
+        .from('bloque')
+        .update({
+          titulo,
+          tarea_id: input.tarea_id,
+          tipo: input.tipo,
+          inicio: combinarFechaHora(f, horaIni),
+          fin: combinarFechaHora(cruzaMedianoche ? addDays(f, 1) : f, horaFin),
+          protegido: input.protegido,
+          importante: input.importante,
+          aviso_min_antes: input.aviso_min_antes,
+          aviso_enviado: false,
+        })
+        .eq('id', b.id)
+        .then(({ error: e }) => {
+          if (e) throw new Error(e.message)
+        })
+    }),
+  )
+}
+
+/** Borra todos los bloques de una serie recurrente. */
+export async function deleteSerie(serieId: string): Promise<void> {
+  const { error } = await supabase.from('bloque').delete().eq('serie_id', serieId)
   if (error) throw new Error(error.message)
 }
 

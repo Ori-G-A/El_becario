@@ -18,6 +18,7 @@ export function BloqueForm({
   initial,
   fechaISO,
   defaultHora,
+  esSerie,
   tareas,
   busy,
   onSave,
@@ -26,9 +27,10 @@ export function BloqueForm({
   initial: Bloque | null
   fechaISO: string
   defaultHora?: string
+  esSerie: boolean
   tareas: { id: string; titulo: string }[]
   busy: boolean
-  onSave: (inputs: BloqueInput[]) => void
+  onSave: (inputs: BloqueInput[], alcanceSerie?: boolean) => void
   onCancel: () => void
 }) {
   const horaInicialInicio = initial ? horaLocal(initial.inicio) : (defaultHora ?? '09:00')
@@ -44,6 +46,7 @@ export function BloqueForm({
   const [aviso, setAviso] = useState<string>(
     initial?.aviso_min_antes != null ? String(initial.aviso_min_antes) : '10',
   )
+  const [alcance, setAlcance] = useState<'uno' | 'serie'>('uno')
   const [repetir, setRepetir] = useState<'no' | 'todos' | 'dias'>('no')
   const [desde, setDesde] = useState(fechaISO)
   const [hasta, setHasta] = useState(fechaISO)
@@ -110,7 +113,7 @@ export function BloqueForm({
       }
     }
 
-    onSave(fechas.map(bloqueDe))
+    onSave(fechas.map(bloqueDe), esSerie && alcance === 'serie')
   }
 
   return (
@@ -118,6 +121,38 @@ export function BloqueForm({
       <p className="mono-tag" style={{ color: 'var(--sello)', marginBottom: '0.6rem' }}>
         {initial ? 'Editar bloque' : 'Nuevo bloque'}
       </p>
+
+      {initial && esSerie && (
+        <div style={{ marginBottom: '0.9rem' }}>
+          <p className="mono-tag" style={{ marginBottom: '0.4rem' }}>Aplicar cambios a</p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+            {([['uno', 'Solo este bloque'], ['serie', 'Toda la serie']] as const).map(([id, label]) => {
+              const on = alcance === id
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setAlcance(id)}
+                  aria-pressed={on}
+                  style={{
+                    padding: '0.3rem 0.6rem',
+                    border: 'var(--borde)',
+                    borderRadius: 'var(--radio)',
+                    background: on ? 'var(--sello)' : 'var(--papel)',
+                    color: on ? '#fff' : 'var(--tinta)',
+                    boxShadow: on ? 'var(--sombra-dura-sm)' : 'none',
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                    fontSize: '0.85rem',
+                  }}
+                >
+                  {label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       <label className="mono-tag" htmlFor="bloque-titulo" style={{ display: 'block', marginBottom: '0.35rem' }}>
         Título

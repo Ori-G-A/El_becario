@@ -110,6 +110,7 @@ export type Bloque = {
   importante: boolean
   aviso_min_antes: number | null
   aviso_enviado: boolean
+  serie_id: string | null
   creada_en: string
   actualizada_en: string
 }
@@ -199,6 +200,7 @@ export interface Database {
           | 'importante'
           | 'aviso_min_antes'
           | 'aviso_enviado'
+          | 'serie_id'
           | 'creada_en'
           | 'actualizada_en'
         >,

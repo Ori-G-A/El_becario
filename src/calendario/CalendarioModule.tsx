@@ -17,7 +17,9 @@ import {
   createBloque,
   createBloques,
   updateBloque,
+  updateSerie,
   deleteBloque,
+  deleteSerie,
   setRealInicio,
   setRealFin,
 } from '../data/bloques'
@@ -85,12 +87,16 @@ export function CalendarioModule() {
     setForm({ open: true, editing: b, fecha: fechaLocalDeISO(b.inicio) })
   }
 
-  async function handleSave(inputs: BloqueInput[]) {
+  async function handleSave(inputs: BloqueInput[], alcanceSerie?: boolean) {
     setBusy(true)
     setError(null)
     try {
       if (form.editing) {
-        await updateBloque(form.editing.id, inputs[0])
+        if (alcanceSerie && form.editing.serie_id) {
+          await updateSerie(form.editing.serie_id, inputs[0])
+        } else {
+          await updateBloque(form.editing.id, inputs[0])
+        }
       } else {
         await createBloques(inputs)
       }
@@ -113,6 +119,22 @@ export function CalendarioModule() {
       await load(modo, fechaISO)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No pude borrar el bloque.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function handleDeleteSerie(b: Bloque) {
+    if (!b.serie_id) return
+    if (!window.confirm('¿Borro TODOS los bloques de esta serie recurrente?')) return
+    setBusy(true)
+    setError(null)
+    try {
+      await deleteSerie(b.serie_id)
+      setForm((f) => ({ ...f, open: false, editing: null }))
+      await load(modo, fechaISO)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No pude borrar la serie.')
     } finally {
       setBusy(false)
     }
@@ -290,6 +312,7 @@ export function CalendarioModule() {
             initial={form.editing}
             fechaISO={form.fecha}
             defaultHora={form.hora}
+            esSerie={form.editing?.serie_id != null}
             tareas={tareas.map((t) => ({ id: t.id, titulo: t.titulo }))}
             busy={busy}
             onSave={handleSave}
@@ -298,16 +321,30 @@ export function CalendarioModule() {
           {form.editing && (
             <>
               <RegistroReal bloque={form.editing} busy={busy} onMarcar={(campo, valor) => form.editing && marcarReal(form.editing, campo, valor)} />
-              <button
-                type="button"
-                className="btn"
-                onClick={() => form.editing && handleDelete(form.editing)}
-                disabled={busy}
-                style={{ marginBottom: '1rem', background: 'var(--papel)', color: 'var(--rag-rojo)' }}
-              >
-                <Trash2 size={15} aria-hidden />
-                Borrar bloque
-              </button>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={() => form.editing && handleDelete(form.editing)}
+                  disabled={busy}
+                  style={{ background: 'var(--papel)', color: 'var(--rag-rojo)' }}
+                >
+                  <Trash2 size={15} aria-hidden />
+                  Borrar bloque
+                </button>
+                {form.editing.serie_id && (
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={() => form.editing && handleDeleteSerie(form.editing)}
+                    disabled={busy}
+                    style={{ background: 'var(--papel)', color: 'var(--rag-rojo)' }}
+                  >
+                    <Trash2 size={15} aria-hidden />
+                    Borrar serie
+                  </button>
+                )}
+              </div>
             </>
           )}
         </>
