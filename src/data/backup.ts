@@ -70,6 +70,7 @@ const COLUMNAS_PERMITIDAS: Record<TablaRestaurable, readonly string[]> = {
     'orden_top12',
     'confidencial',
     'fecha',
+    'agendada_para',
     'creada_en',
     'actualizada_en',
   ],

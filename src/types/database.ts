@@ -61,6 +61,7 @@ export type Tarea = {
   orden_top12: number | null
   confidencial: boolean
   fecha: string | null
+  agendada_para: string | null
   creada_en: string
   actualizada_en: string
 }
@@ -168,6 +169,7 @@ export interface Database {
           | 'orden_top12'
           | 'confidencial'
           | 'fecha'
+          | 'agendada_para'
           | 'creada_en'
           | 'actualizada_en'
         >,

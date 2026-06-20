@@ -39,7 +39,8 @@ import {
   TOP12_MAX,
   type Cuadrante,
 } from '../lib/eisenhower'
-import { TareaForm } from './TareaForm'
+import { createBloque } from '../data/bloques'
+import { TareaForm, type BloqueDeTarea } from './TareaForm'
 import { TareaRow } from './TareaRow'
 import { MatrizEisenhower } from './MatrizEisenhower'
 
@@ -136,14 +137,27 @@ export function Top12Module() {
     load()
   }, [])
 
-  async function handleSave(input: TareaInput, areaIds: string[]) {
+  async function handleSave(input: TareaInput, areaIds: string[], bloque?: BloqueDeTarea) {
     setBusy(true)
     setError(null)
     try {
       if (form.editing) {
         await updateTarea(form.editing.id, input, areaIds)
       } else {
-        await createTarea(input, areaIds)
+        const creada = await createTarea(input, areaIds)
+        // "Con horario": crea el bloque del calendario vinculado a la tarea.
+        if (bloque) {
+          await createBloque({
+            titulo: input.confidencial ? 'Bloque protegido' : input.titulo,
+            tarea_id: creada.id,
+            tipo: bloque.tipo,
+            inicio: bloque.inicio,
+            fin: bloque.fin,
+            protegido: false,
+            importante: false,
+            aviso_min_antes: null,
+          })
+        }
       }
       setForm({ open: false, editing: null })
       await load()

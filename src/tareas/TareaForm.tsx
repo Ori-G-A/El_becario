@@ -1,10 +1,19 @@
 import { useState, type FormEvent } from 'react'
 import { Check, X, ShieldAlert } from 'lucide-react'
-import type { Area, Iniciativa } from '../types/database'
+import type { Area, Iniciativa, TipoBloque } from '../types/database'
 import type { TareaConAreas, TareaInput } from '../data/tareas'
 import { AreaIcon } from '../components/AreaIcon'
 import { inputStyle } from '../components/styles'
 import { cuadranteDe, metaCuadrante } from '../lib/eisenhower'
+import { TIPO_BLOQUE, TIPOS_BLOQUE } from '../lib/bloqueTipos'
+import { combinarFechaHora, addDays } from '../lib/date'
+
+/** Bloque a crear junto con la tarea cuando se agenda "con horario". */
+export interface BloqueDeTarea {
+  inicio: string
+  fin: string
+  tipo: TipoBloque
+}
 
 /** Control sí/no de un solo eje (importante o urgente). */
 function EjeSiNo({
@@ -64,7 +73,7 @@ export function TareaForm({
   areas: Area[]
   iniciativas: Iniciativa[]
   busy: boolean
-  onSave: (input: TareaInput, areaIds: string[]) => void
+  onSave: (input: TareaInput, areaIds: string[], bloque?: BloqueDeTarea) => void
   onCancel: () => void
 }) {
   const [titulo, setTitulo] = useState(initial?.titulo ?? '')
@@ -74,6 +83,14 @@ export function TareaForm({
   const [areaIds, setAreaIds] = useState<string[]>(initial?.area_ids ?? [])
   const [importante, setImportante] = useState(initial?.importante ?? false)
   const [urgente, setUrgente] = useState(initial?.urgente ?? false)
+  const [estimacion, setEstimacion] = useState(
+    initial?.estimacion_min != null ? String(initial.estimacion_min) : '',
+  )
+  const [dia, setDia] = useState(initial?.agendada_para ?? '')
+  const [modo, setModo] = useState<'checklist' | 'bloque'>('checklist')
+  const [horaInicio, setHoraInicio] = useState('09:00')
+  const [horaFin, setHoraFin] = useState('10:00')
+  const [tipoBloque, setTipoBloque] = useState<TipoBloque>('trabajo_profundo')
   const [error, setError] = useState<string | null>(null)
 
   const meta = metaCuadrante(cuadranteDe({ importante, urgente }))
@@ -82,6 +99,9 @@ export function TareaForm({
     setAreaIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
   }
 
+  // "Con horario" (crear el bloque) solo al crear la tarea; al editar, solo checklist.
+  const conHorario = !initial && dia !== '' && modo === 'bloque'
+
   function submit(e: FormEvent) {
     e.preventDefault()
     const limpio = titulo.trim()
@@ -89,6 +109,20 @@ export function TareaForm({
       setError('Ponle un título a la tarea.')
       return
     }
+    const estimacionMin = estimacion.trim() === '' ? null : Number(estimacion)
+    if (estimacionMin != null && (!Number.isFinite(estimacionMin) || estimacionMin < 0)) {
+      setError('La estimación debe ser un número de minutos válido.')
+      return
+    }
+
+    const bloque: BloqueDeTarea | undefined = conHorario
+      ? {
+          inicio: combinarFechaHora(dia, horaInicio),
+          fin: combinarFechaHora(horaFin <= horaInicio ? addDays(dia, 1) : dia, horaFin),
+          tipo: tipoBloque,
+        }
+      : undefined
+
     onSave(
       {
         titulo: limpio,
@@ -97,8 +131,12 @@ export function TareaForm({
         iniciativa_id: iniciativaId || null,
         importante,
         urgente,
+        estimacion_min: estimacionMin,
+        // Si va con horario, vive en el timeline: no se agenda como checklist.
+        agendada_para: dia === '' || conHorario ? null : dia,
       },
       areaIds,
+      bloque,
     )
   }
 
@@ -230,6 +268,103 @@ export function TareaForm({
         <p className="mono-tag" style={{ opacity: 0.7, margin: '-0.6rem 0 1rem', lineHeight: 1.4 }}>
           Título y encargado se cifran con tu PIN. Si lo olvidas, no se recuperan.
         </p>
+      )}
+
+      <div style={{ display: 'flex', gap: '0.8rem', flexWrap: 'wrap', marginBottom: '0.9rem' }}>
+        <div style={{ flex: 1, minWidth: 130 }}>
+          <label className="mono-tag" htmlFor="tarea-estim" style={{ display: 'block', marginBottom: '0.35rem' }}>
+            Estimación (min)
+          </label>
+          <input
+            id="tarea-estim"
+            type="number"
+            min={0}
+            value={estimacion}
+            onChange={(e) => setEstimacion(e.target.value)}
+            placeholder="opcional"
+            style={inputStyle}
+          />
+        </div>
+        <div style={{ flex: 1, minWidth: 130 }}>
+          <label className="mono-tag" htmlFor="tarea-dia" style={{ display: 'block', marginBottom: '0.35rem' }}>
+            Agendar para
+          </label>
+          <input
+            id="tarea-dia"
+            type="date"
+            value={dia}
+            onChange={(e) => setDia(e.target.value)}
+            style={inputStyle}
+          />
+        </div>
+      </div>
+
+      {dia !== '' && !initial && (
+        <div style={{ marginBottom: '0.9rem' }}>
+          <p className="mono-tag" style={{ marginBottom: '0.4rem' }}>Modo</p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+            {([['checklist', 'Sin horario (checklist)'], ['bloque', 'Con horario']] as const).map(
+              ([id, label]) => {
+                const on = modo === id
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setModo(id)}
+                    aria-pressed={on}
+                    style={{
+                      padding: '0.3rem 0.6rem',
+                      border: 'var(--borde)',
+                      borderRadius: 'var(--radio)',
+                      background: on ? 'var(--sello)' : 'var(--papel)',
+                      color: on ? '#fff' : 'var(--tinta)',
+                      boxShadow: on ? 'var(--sombra-dura-sm)' : 'none',
+                      cursor: 'pointer',
+                      fontWeight: 600,
+                      fontSize: '0.85rem',
+                    }}
+                  >
+                    {label}
+                  </button>
+                )
+              },
+            )}
+          </div>
+        </div>
+      )}
+
+      {conHorario && (
+        <div style={{ display: 'flex', gap: '0.8rem', flexWrap: 'wrap', marginBottom: '0.9rem' }}>
+          <div style={{ flex: 1, minWidth: 90 }}>
+            <label className="mono-tag" htmlFor="tarea-ini-h" style={{ display: 'block', marginBottom: '0.35rem' }}>
+              Inicio
+            </label>
+            <input id="tarea-ini-h" type="time" value={horaInicio} onChange={(e) => setHoraInicio(e.target.value)} style={inputStyle} />
+          </div>
+          <div style={{ flex: 1, minWidth: 90 }}>
+            <label className="mono-tag" htmlFor="tarea-fin-h" style={{ display: 'block', marginBottom: '0.35rem' }}>
+              Fin
+            </label>
+            <input id="tarea-fin-h" type="time" value={horaFin} onChange={(e) => setHoraFin(e.target.value)} style={inputStyle} />
+          </div>
+          <div style={{ flex: 1, minWidth: 130 }}>
+            <label className="mono-tag" htmlFor="tarea-tipo-b" style={{ display: 'block', marginBottom: '0.35rem' }}>
+              Tipo de bloque
+            </label>
+            <select
+              id="tarea-tipo-b"
+              value={tipoBloque}
+              onChange={(e) => setTipoBloque(e.target.value as TipoBloque)}
+              style={inputStyle}
+            >
+              {TIPOS_BLOQUE.map((t) => (
+                <option key={t} value={t}>
+                  {TIPO_BLOQUE[t].label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
       )}
 
       {error && (

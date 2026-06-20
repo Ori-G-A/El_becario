@@ -14,6 +14,8 @@ export interface TareaInput {
   iniciativa_id: string | null
   importante: boolean
   urgente: boolean
+  estimacion_min: number | null
+  agendada_para: string | null
 }
 
 async function fetchAreaMap(tareaIds: string[]): Promise<Map<string, string[]>> {
@@ -89,6 +91,25 @@ export async function listTareasConAreas(): Promise<TareaConAreas[]> {
     .order('creada_en', { ascending: true })
   if (error) throw new Error(error.message)
   return hidratarTareas(data ?? [])
+}
+
+/** Pendientes de checklist agendados para un día (sin bloque de horario). */
+export async function listTareasAgendadas(fechaISO: string): Promise<TareaConAreas[]> {
+  const { data, error } = await supabase
+    .from('tarea')
+    .select('*')
+    .eq('agendada_para', fechaISO)
+    .order('importante', { ascending: false })
+    .order('urgente', { ascending: false })
+    .order('creada_en', { ascending: true })
+  if (error) throw new Error(error.message)
+  return hidratarTareas(data ?? [])
+}
+
+/** Agenda o saca una tarea del checklist de un día (null = la saca). */
+export async function setAgendadaPara(id: string, fecha: string | null): Promise<void> {
+  const { error } = await supabase.from('tarea').update({ agendada_para: fecha }).eq('id', id)
+  if (error) throw new Error(error.message)
 }
 
 /** Reemplaza el conjunto de áreas de una tarea. */

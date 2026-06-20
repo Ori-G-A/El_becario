@@ -23,9 +23,16 @@ import {
   setRealInicio,
   setRealFin,
 } from '../data/bloques'
-import { listTop12, type TareaConAreas } from '../data/tareas'
+import {
+  listTop12,
+  listTareasAgendadas,
+  setAgendadaPara,
+  setEstadoTarea,
+  type TareaConAreas,
+} from '../data/tareas'
 import { sumarCafe } from '../easter/cafe'
 import { BloqueForm } from './BloqueForm'
+import { ChecklistDia } from './ChecklistDia'
 import { DiaTimeline } from './DiaTimeline'
 import { SemanaTimeline } from './SemanaTimeline'
 import { RegistroReal } from './RegistroReal'
@@ -37,6 +44,7 @@ export function CalendarioModule() {
   const [fechaISO, setFechaISO] = useState(todayISO())
   const [bloques, setBloques] = useState<Bloque[]>([])
   const [tareas, setTareas] = useState<TareaConAreas[]>([])
+  const [pendientes, setPendientes] = useState<TareaConAreas[]>([])
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -54,9 +62,14 @@ export function CalendarioModule() {
     try {
       const consulta =
         modoActual === 'dia' ? listBloquesDelDia(fecha) : listBloquesDeSemana(lunesDe(fecha))
-      const [b, t] = await Promise.all([consulta, listTop12()])
+      const [b, t, p] = await Promise.all([
+        consulta,
+        listTop12(),
+        modoActual === 'dia' ? listTareasAgendadas(fecha) : Promise.resolve([]),
+      ])
       setBloques(b)
       setTareas(t)
+      setPendientes(p)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No pude cargar el calendario.')
     } finally {
@@ -158,6 +171,32 @@ export function CalendarioModule() {
       )
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No pude guardar el registro.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function togglePendiente(t: TareaConAreas) {
+    setBusy(true)
+    setError(null)
+    try {
+      await setEstadoTarea(t.id, t.estado === 'hecha' ? 'pendiente' : 'hecha')
+      await load(modo, fechaISO)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No pude cambiar el pendiente.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function quitarPendiente(t: TareaConAreas) {
+    setBusy(true)
+    setError(null)
+    try {
+      await setAgendadaPara(t.id, null)
+      await load(modo, fechaISO)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No pude sacar la tarea del día.')
     } finally {
       setBusy(false)
     }
@@ -353,12 +392,20 @@ export function CalendarioModule() {
       {loading ? (
         <p className="mono-tag">Armando tu {modo === 'dia' ? 'día' : 'semana'}…</p>
       ) : modo === 'dia' ? (
-        <DiaTimeline
-          fechaISO={fechaISO}
-          bloques={bloques}
-          onSelectBloque={abrirEdicion}
-          onCrearEnHora={(hora) => abrirNuevo(fechaISO, hora)}
-        />
+        <>
+          <ChecklistDia
+            tareas={pendientes}
+            busy={busy}
+            onToggleHecha={togglePendiente}
+            onQuitar={quitarPendiente}
+          />
+          <DiaTimeline
+            fechaISO={fechaISO}
+            bloques={bloques}
+            onSelectBloque={abrirEdicion}
+            onCrearEnHora={(hora) => abrirNuevo(fechaISO, hora)}
+          />
+        </>
       ) : (
         <SemanaTimeline
           lunesISO={lunesISO}
