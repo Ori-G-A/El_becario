@@ -7,6 +7,19 @@ import type { EstadoTarea, Tarea } from '../types/database'
 /** Tarea junto con los ids de áreas que la clasifican. */
 export type TareaConAreas = Tarea & { area_ids: string[] }
 
+/**
+ * Amnistía: los pendientes del día que quedaron atrás vuelven al pozo general
+ * (sin fecha), en vez de acumularse como deuda vencida.
+ */
+export async function despejarChecklistVencido(): Promise<void> {
+  const { error } = await supabase
+    .from('tarea')
+    .update({ agendada_para: null })
+    .lt('agendada_para', todayISO())
+    .neq('estado', 'hecha')
+  if (error) throw new Error(error.message)
+}
+
 export interface TareaInput {
   titulo: string
   responsable: string

@@ -233,7 +233,7 @@ async function cierreJornada(fecha: string): Promise<Resultado> {
         .maybeSingle(),
       supabase
         .from('bloque')
-        .select('real_fin')
+        .select('id')
         .eq('user_id', userId)
         .neq('tipo', 'sueno')
         .gte('inicio', desde)
@@ -251,9 +251,9 @@ async function cierreJornada(fecha: string): Promise<Resultado> {
           : 'El Top Goal quedó pendiente; mañana lo cazamos temprano.',
       )
     }
+    // Sin conteo de registros: lo planeado cuenta como ocurrido, sin regaños.
     if (bloques && bloques.length > 0) {
-      const registrados = bloques.filter((b) => b.real_fin != null).length
-      partes.push(`Registraste ${registrados} de ${bloques.length} bloques.`)
+      partes.push(`Hoy hubo ${bloques.length} bloque${bloques.length > 1 ? 's' : ''} en la agenda.`)
     }
 
     const resultado = await enviarA(userId, {

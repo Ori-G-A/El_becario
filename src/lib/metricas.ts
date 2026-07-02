@@ -34,7 +34,7 @@ export interface MetricasSemana {
   bloquesConReal: number
 }
 
-export function calcularMetricas(bloques: Bloque[]): MetricasSemana {
+export function calcularMetricas(bloques: Bloque[], ahora = new Date()): MetricasSemana {
   let minProfundo = 0
   let minReactivo = 0
   for (const b of bloques) {
@@ -43,8 +43,14 @@ export function calcularMetricas(bloques: Bloque[]): MetricasSemana {
   }
   const minTrabajo = minProfundo + minReactivo
 
+  // Lo planeado cuenta como ocurrido salvo excepción: un bloque de autocuidado
+  // que ya pasó se asume respetado aunque no se haya registrado. La acción de
+  // la usuaria es corregir la excepción (borrar/mover el bloque), no registrar
+  // cada uno para que las métricas vivan.
   const auto = bloques.filter((b) => b.tipo === 'autocuidado')
-  const autoRespetados = auto.filter((b) => b.real_inicio).length
+  const autoRespetados = auto.filter(
+    (b) => b.real_inicio != null || new Date(b.fin) <= ahora,
+  ).length
 
   let planReal = 0
   let realReal = 0

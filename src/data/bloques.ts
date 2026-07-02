@@ -14,6 +14,21 @@ export interface BloqueInput {
   aviso_min_antes: number | null
 }
 
+/**
+ * Amnistía: borra los bloques planeados de un rango [desde, hasta) que no
+ * tienen ningún registro real. Eran plan, no realidad; que no cuenten.
+ */
+export async function borrarBloquesNoOcurridos(desdeISO: string, hastaISO: string): Promise<void> {
+  const { error } = await supabase
+    .from('bloque')
+    .delete()
+    .gte('inicio', desdeISO)
+    .lt('inicio', hastaISO)
+    .is('real_inicio', null)
+    .is('real_fin', null)
+  if (error) throw new Error(error.message)
+}
+
 async function descifrarBloque(row: Bloque): Promise<Bloque> {
   return {
     ...row,

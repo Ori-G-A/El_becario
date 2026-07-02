@@ -16,6 +16,7 @@ import { useAuth } from '../auth/useAuth'
 import { useLock } from '../lock/useLock'
 import { exportarBackup, restaurarBackupDesdeTexto } from '../data/backup'
 import { AlertasBanner } from './AlertasBanner'
+import { AmnistiaBanner } from './AmnistiaBanner'
 import { NotificacionesToggle } from './NotificacionesToggle'
 import { desactivarPush } from '../lib/push'
 import { useKonami, useLongPress } from '../easter/hooks'
@@ -277,6 +278,7 @@ export function AppShell({
             </button>
           </div>
         )}
+        <AmnistiaBanner />
         <AlertasBanner />
         {children}
       </main>
