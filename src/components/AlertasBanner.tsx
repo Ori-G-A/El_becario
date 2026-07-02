@@ -49,7 +49,7 @@ export function AlertasBanner() {
           <BatteryWarning size={18} aria-hidden style={{ flexShrink: 0, marginTop: 2 }} />
           <div style={{ flex: 1 }}>
             <strong>{alertas.burnoutRojos} métricas en rojo esta semana.</strong>{' '}
-            No te pago tan bien como para que te enfermes. Cierra la laptop y descansa.
+            No te pagan lo suficiente como para que te enfermes. Cierra la laptop y descansa; yo cuido la oficina.
           </div>
           <button
             type="button"
