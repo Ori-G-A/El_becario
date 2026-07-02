@@ -448,6 +448,7 @@ export function CalendarioModule() {
             bloques={bloques}
             onSelectBloque={abrirEdicion}
             onCrearEnHora={(hora) => abrirNuevo(fechaISO, hora)}
+            onMover={moverBloque}
           />
         </>
       ) : (

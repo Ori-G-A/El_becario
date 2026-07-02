@@ -1,4 +1,4 @@
-import { createElement, type MouseEvent } from 'react'
+import { createElement, useRef, useState, type MouseEvent, type PointerEvent } from 'react'
 import { Shield, Bell, Moon } from 'lucide-react'
 import type { Bloque } from '../types/database'
 import { TIPO_BLOQUE } from '../lib/bloqueTipos'
@@ -8,6 +8,7 @@ import {
   ALTO_TOTAL,
   HORAS,
   HORA_INICIO,
+  PX_POR_MIN,
   topYAltoEnDia,
   horaDesdeY,
   layoutSolapamiento,
@@ -15,19 +16,63 @@ import {
 
 const COL_IZQ = 46 // ancho de la columna de horas
 const DIA_MS = 86_400_000
+const SNAP_MIN = 15
 
 export function DiaTimeline({
   fechaISO,
   bloques,
   onSelectBloque,
   onCrearEnHora,
+  onMover,
 }: {
   fechaISO: string
   bloques: Bloque[]
   onSelectBloque: (b: Bloque) => void
   onCrearEnHora: (hhmm: string) => void
+  onMover: (b: Bloque, deltaMin: number) => void
 }) {
   const diaMs = new Date(combinarFechaHora(fechaISO, '00:00')).getTime()
+
+  // Arrastre con mouse (solo PC): en táctil el gesto pelearía con el scroll,
+  // ahí siguen los botones −30/+30/→ mañana al abrir el bloque.
+  const [drag, setDrag] = useState<{ id: string; dy: number } | null>(null)
+  const yInicioRef = useRef(0)
+  const arrastroRef = useRef(false)
+
+  function deltaMinDe(dy: number): number {
+    return Math.round(dy / PX_POR_MIN / SNAP_MIN) * SNAP_MIN
+  }
+
+  function onBloquePointerDown(e: PointerEvent<HTMLButtonElement>, b: Bloque) {
+    if (e.pointerType !== 'mouse' || e.button !== 0) return
+    yInicioRef.current = e.clientY
+    arrastroRef.current = false
+    e.currentTarget.setPointerCapture(e.pointerId)
+    setDrag({ id: b.id, dy: 0 })
+  }
+
+  function onBloquePointerMove(e: PointerEvent<HTMLButtonElement>, b: Bloque) {
+    if (!drag || drag.id !== b.id) return
+    const dy = e.clientY - yInicioRef.current
+    if (Math.abs(dy) > 4) arrastroRef.current = true
+    if (arrastroRef.current) setDrag({ id: b.id, dy })
+  }
+
+  function onBloquePointerUp(b: Bloque) {
+    if (!drag || drag.id !== b.id) return
+    const deltaMin = deltaMinDe(drag.dy)
+    setDrag(null)
+    if (arrastroRef.current && deltaMin !== 0) onMover(b, deltaMin)
+  }
+
+  function onBloqueClick(b: Bloque) {
+    // Un arrastre no es un click: no abrir el formulario al soltar.
+    if (arrastroRef.current) {
+      arrastroRef.current = false
+      return
+    }
+    onSelectBloque(b)
+  }
 
   const pos = layoutSolapamiento(
     bloques.map((b) => ({
@@ -70,14 +115,24 @@ export function DiaTimeline({
         const { col, cols } = pos.get(b.id) ?? { col: 0, cols: 1 }
         const left = `calc(${COL_IZQ + 4}px + (100% - ${COL_IZQ + 6}px) * ${col} / ${cols})`
         const width = `calc((100% - ${COL_IZQ + 6}px) / ${cols} - 2px)`
+
+        const arrastrando = drag?.id === b.id && arrastroRef.current
+        const deltaMin = arrastrando && drag ? deltaMinDe(drag.dy) : 0
+        const desplazado = (ms: string) =>
+          new Date(new Date(ms).getTime() + deltaMin * 60_000).toISOString()
+
         return (
           <button
             key={b.id}
             type="button"
-            onClick={() => onSelectBloque(b)}
+            onClick={() => onBloqueClick(b)}
+            onPointerDown={(e) => onBloquePointerDown(e, b)}
+            onPointerMove={(e) => onBloquePointerMove(e, b)}
+            onPointerUp={() => onBloquePointerUp(b)}
+            onPointerCancel={() => setDrag(null)}
             style={{
               position: 'absolute',
-              top,
+              top: top + deltaMin * PX_POR_MIN,
               left,
               width,
               height: alto,
@@ -88,8 +143,10 @@ export function DiaTimeline({
               border: b.protegido ? '2.5px solid var(--tinta)' : '2px solid var(--tinta)',
               borderLeft: `6px solid ${cfg.color}`,
               background: completado ? 'var(--papel-hueco)' : 'var(--papel)',
-              boxShadow: b.protegido ? 'var(--sombra-dura-sm)' : 'none',
-              cursor: 'pointer',
+              boxShadow: arrastrando ? 'var(--sombra-dura-sm)' : b.protegido ? 'var(--sombra-dura-sm)' : 'none',
+              cursor: arrastrando ? 'grabbing' : 'pointer',
+              zIndex: arrastrando ? 2 : undefined,
+              opacity: arrastrando ? 0.9 : 1,
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
@@ -103,7 +160,7 @@ export function DiaTimeline({
             </div>
             {alto > 28 && (
               <span className="mono-tag" style={{ opacity: 0.6, fontSize: '0.64rem' }}>
-                {horaLocal(b.inicio)}–{horaLocal(b.fin)}
+                {horaLocal(desplazado(b.inicio))}–{horaLocal(desplazado(b.fin))}
                 {completado ? ' · hecho' : ''}
               </span>
             )}
