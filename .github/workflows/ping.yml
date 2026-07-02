@@ -1,0 +1,24 @@
+name: Ping keep-alive
+
+# Supabase Free pausa proyectos tras ~7 días sin peticiones a la API.
+# Este ping trivial lo mantiene despierto, independiente del sistema de
+# avisos (que corre con pg_cron dentro del propio Supabase). Aquí el
+# atraso del cron de GitHub no importa: da igual a qué hora llegue.
+on:
+  schedule:
+    - cron: '17 */12 * * *'
+  workflow_dispatch: {}
+
+permissions: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Consulta trivial a la API de Supabase
+        # La anon key es pública por diseño (viaja en el bundle del cliente).
+        run: |
+          curl --fail --silent --show-error --output /dev/null \
+            -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRjZ3d0d3RqdWJtcHZoeGFycnd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzOTU3MjcsImV4cCI6MjA5Njk3MTcyN30.qf0XAzeF4CO-qDJeIPETRDqmwD6mMuIwcZ0ZycqNyUQ" \
+            "https://tcgwtwtjubmpvhxarrwv.supabase.co/rest/v1/"
