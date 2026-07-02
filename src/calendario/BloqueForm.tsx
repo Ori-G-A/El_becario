@@ -3,16 +3,10 @@ import { Check, X, Shield, Bell } from 'lucide-react'
 import type { Bloque, TipoBloque } from '../types/database'
 import type { BloqueInput } from '../data/bloques'
 import { TIPO_BLOQUE, TIPOS_BLOQUE } from '../lib/bloqueTipos'
-import { combinarFechaHora, horaLocal, addDays, fechasEntre } from '../lib/date'
+import { combinarFechaHora, horaLocal, addDays, fechasEntre, masUnaHora } from '../lib/date'
 import { inputStyle } from '../components/styles'
 
 const AVISO_MAX_MIN = 7 * 24 * 60
-
-function masUnaHora(hhmm: string): string {
-  const [h, m] = hhmm.split(':').map(Number)
-  const total = (h + 1) % 24
-  return `${String(total).padStart(2, '0')}:${String(m).padStart(2, '0')}`
-}
 
 export function BloqueForm({
   initial,

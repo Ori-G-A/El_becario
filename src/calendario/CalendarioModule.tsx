@@ -9,6 +9,7 @@ import {
   fechaLocalDeISO,
   lunesDe,
   formatFechaLarga,
+  proximaMediaHora,
 } from '../lib/date'
 import {
   type BloqueInput,
@@ -96,6 +97,11 @@ export function CalendarioModule() {
     setForm({ open: true, editing: null, hora, fecha })
   }
 
+  /** Para hoy, la próxima media hora; para otros días, 09:00. */
+  function horaSugerida(fecha: string): string {
+    return fecha === todayISO() ? proximaMediaHora() : '09:00'
+  }
+
   function abrirEdicion(b: Bloque) {
     setForm({ open: true, editing: b, fecha: fechaLocalDeISO(b.inicio) })
   }
@@ -148,6 +154,24 @@ export function CalendarioModule() {
       await load(modo, fechaISO)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No pude borrar la serie.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  /** Corre un bloque `deltaMin` minutos (o un día entero) sin pasar por el formulario. */
+  async function moverBloque(b: Bloque, deltaMin: number) {
+    setBusy(true)
+    setError(null)
+    try {
+      await updateBloque(b.id, {
+        inicio: new Date(new Date(b.inicio).getTime() + deltaMin * 60_000).toISOString(),
+        fin: new Date(new Date(b.fin).getTime() + deltaMin * 60_000).toISOString(),
+      })
+      setForm((f) => ({ ...f, open: false, editing: null }))
+      await load(modo, fechaISO)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No pude mover el bloque.')
     } finally {
       setBusy(false)
     }
@@ -206,13 +230,14 @@ export function CalendarioModule() {
     setBusy(true)
     setError(null)
     try {
+      const inicio = combinarFechaHora(fechaISO, horaSugerida(fechaISO))
       await createBloque({
         // El bloque no se cifra: si la tarea es confidencial, no copiamos su título.
         titulo: tarea.confidencial ? 'Top Goal protegido' : tarea.titulo,
         tarea_id: tarea.id,
         tipo: 'top_goal',
-        inicio: combinarFechaHora(fechaISO, '09:00'),
-        fin: combinarFechaHora(fechaISO, '11:00'),
+        inicio,
+        fin: new Date(new Date(inicio).getTime() + 2 * 3600_000).toISOString(),
         protegido: true,
         importante: false,
         aviso_min_antes: null,
@@ -315,7 +340,10 @@ export function CalendarioModule() {
           <button
             type="button"
             className="btn"
-            onClick={() => abrirNuevo(modo === 'dia' ? fechaISO : todayISO(), modo === 'dia' ? '09:00' : undefined)}
+            onClick={() => {
+              const fecha = modo === 'dia' ? fechaISO : todayISO()
+              abrirNuevo(fecha, horaSugerida(fecha))
+            }}
           >
             <Plus size={16} aria-hidden />
             Nuevo bloque
@@ -361,6 +389,22 @@ export function CalendarioModule() {
             <>
               <RegistroReal bloque={form.editing} busy={busy} onMarcar={(campo, valor) => form.editing && marcarReal(form.editing, campo, valor)} />
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
+                {([
+                  ['−30 min', -30],
+                  ['+30 min', 30],
+                  ['→ mañana', 24 * 60],
+                ] as const).map(([label, delta]) => (
+                  <button
+                    key={label}
+                    type="button"
+                    className="btn"
+                    onClick={() => form.editing && moverBloque(form.editing, delta)}
+                    disabled={busy}
+                    style={{ background: 'var(--papel)', color: 'var(--tinta)' }}
+                  >
+                    {label}
+                  </button>
+                ))}
                 <button
                   type="button"
                   className="btn"

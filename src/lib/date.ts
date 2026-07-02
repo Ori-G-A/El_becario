@@ -51,6 +51,19 @@ export function combinarFechaHora(fechaISO: string, hhmm: string): string {
   return new Date(y, m - 1, d, hh, mm).toISOString()
 }
 
+/** Próxima media hora en punto desde `ahora`: "14:12" → "14:30", "14:40" → "15:00". */
+export function proximaMediaHora(ahora = new Date()): string {
+  const d = new Date(ahora)
+  d.setMinutes(Math.ceil(d.getMinutes() / 30) * 30, 0, 0)
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
+/** Suma una hora a un "HH:MM" (con vuelta a 00 tras las 23). */
+export function masUnaHora(hhmm: string): string {
+  const [h, m] = hhmm.split(':').map(Number)
+  return `${String((h + 1) % 24).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+}
+
 /** Hora local "HH:MM" de un timestamp ISO. */
 export function horaLocal(iso: string): string {
   const d = new Date(iso)

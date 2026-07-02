@@ -6,7 +6,7 @@ import { AreaIcon } from '../components/AreaIcon'
 import { inputStyle } from '../components/styles'
 import { cuadranteDe, metaCuadrante } from '../lib/eisenhower'
 import { TIPO_BLOQUE, TIPOS_BLOQUE } from '../lib/bloqueTipos'
-import { combinarFechaHora, addDays } from '../lib/date'
+import { combinarFechaHora, addDays, proximaMediaHora, masUnaHora } from '../lib/date'
 
 /** Bloque a crear junto con la tarea cuando se agenda "con horario". */
 export interface BloqueDeTarea {
@@ -88,8 +88,8 @@ export function TareaForm({
   )
   const [dia, setDia] = useState(initial?.agendada_para ?? '')
   const [modo, setModo] = useState<'checklist' | 'bloque'>('checklist')
-  const [horaInicio, setHoraInicio] = useState('09:00')
-  const [horaFin, setHoraFin] = useState('10:00')
+  const [horaInicio, setHoraInicio] = useState(() => proximaMediaHora())
+  const [horaFin, setHoraFin] = useState(() => masUnaHora(proximaMediaHora()))
   const [tipoBloque, setTipoBloque] = useState<TipoBloque>('trabajo_profundo')
   const [error, setError] = useState<string | null>(null)
 
