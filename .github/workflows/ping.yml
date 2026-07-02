@@ -21,4 +21,4 @@ jobs:
         run: |
           curl --fail --silent --show-error --output /dev/null \
             -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRjZ3d0d3RqdWJtcHZoeGFycnd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzOTU3MjcsImV4cCI6MjA5Njk3MTcyN30.qf0XAzeF4CO-qDJeIPETRDqmwD6mMuIwcZ0ZycqNyUQ" \
-            "https://tcgwtwtjubmpvhxarrwv.supabase.co/rest/v1/"
+            "https://tcgwtwtjubmpvhxarrwv.supabase.co/rest/v1/area?select=id&limit=1"
