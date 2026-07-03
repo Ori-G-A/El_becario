@@ -58,7 +58,7 @@ function tituloLegible(titulo: string | null | undefined, generico: string): str
   return titulo
 }
 
-type Resultado = { enviados: number; fallos: number }
+type Resultado = { enviados: number; fallos: number; dispositivos?: number }
 
 /** Envía un payload a todos los dispositivos de un usuario. Poda suscripciones muertas. */
 async function enviarA(userId: string, payload: Record<string, string>): Promise<Resultado> {
@@ -71,6 +71,7 @@ async function enviarA(userId: string, payload: Record<string, string>): Promise
     return { enviados: 0, fallos: 1 }
   }
   const body = JSON.stringify(payload)
+  const dispositivos = (subs ?? []).length
   let enviados = 0
   let fallos = 0
   for (const sub of subs ?? []) {
@@ -90,7 +91,7 @@ async function enviarA(userId: string, payload: Record<string, string>): Promise
       }
     }
   }
-  return { enviados, fallos }
+  return { enviados, fallos, dispositivos }
 }
 
 /** 1. Avisos de bloques importantes próximos (misma lógica del emisor viejo, con título real). */
@@ -125,7 +126,8 @@ async function avisosDeBloques(): Promise<Resultado> {
     })
     enviados += resultado.enviados
     fallos += resultado.fallos
-    if (resultado.fallos === 0) {
+    // Sin dispositivos suscritos no hay envío real: no quemar el aviso.
+    if (resultado.fallos === 0 && (resultado.dispositivos ?? 0) > 0) {
       await supabase
         .from('bloque')
         .update({ aviso_enviado: true })
@@ -274,13 +276,15 @@ Deno.serve(async () => {
   if (hora >= HORA_RESUMEN && hora < HORA_RESUMEN_LIMITE) tareas.push(resumenManana(fecha))
   if (hora >= HORA_CIERRE) tareas.push(cierreJornada(fecha))
 
-  const resultados = await Promise.all(tareas)
+  const [resultados, usuarios] = await Promise.all([Promise.all(tareas), usuariosSuscritos()])
   const total = resultados.reduce(
     (acc, r) => ({ enviados: acc.enviados + r.enviados, fallos: acc.fallos + r.fallos }),
     { enviados: 0, fallos: 0 },
   )
-  console.log(`Pushes enviados: ${total.enviados}. Fallos: ${total.fallos}.`)
-  return new Response(JSON.stringify(total), {
+  // Diagnóstico: usuarios con dispositivos suscritos (0 = nadie recibiría nada).
+  const cuerpo = { ...total, usuariosSuscritos: usuarios.length, horaLocal: `${fecha} ${hora}h` }
+  console.log(JSON.stringify(cuerpo))
+  return new Response(JSON.stringify(cuerpo), {
     headers: { 'Content-Type': 'application/json' },
     status: total.fallos > 0 ? 500 : 200,
   })
