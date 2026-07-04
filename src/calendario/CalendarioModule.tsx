@@ -112,6 +112,7 @@ export function CalendarioModule() {
           fin: new Date(new Date(inicio).getTime() + estimacionMin * 60_000).toISOString(),
           protegido: false,
           importante: false,
+          confidencial: false,
           aviso_min_antes: null,
         })
       }
@@ -280,6 +281,7 @@ export function CalendarioModule() {
         fin: new Date(new Date(inicio).getTime() + 2 * 3600_000).toISOString(),
         protegido: true,
         importante: false,
+        confidencial: false,
         aviso_min_antes: null,
       })
       await load(modo, fechaISO)

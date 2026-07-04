@@ -109,6 +109,7 @@ export type Bloque = {
   tipo: TipoBloque
   protegido: boolean
   importante: boolean
+  confidencial: boolean
   aviso_min_antes: number | null
   aviso_enviado: boolean
   serie_id: string | null
@@ -200,6 +201,7 @@ export interface Database {
           | 'tipo'
           | 'protegido'
           | 'importante'
+          | 'confidencial'
           | 'aviso_min_antes'
           | 'aviso_enviado'
           | 'serie_id'

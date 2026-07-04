@@ -11,6 +11,7 @@ export interface BloqueInput {
   fin: string
   protegido: boolean
   importante: boolean
+  confidencial: boolean
   aviso_min_antes: number | null
 }
 
@@ -37,17 +38,20 @@ async function descifrarBloque(row: Bloque): Promise<Bloque> {
 }
 
 async function prepararBloque(input: BloqueInput): Promise<BloqueInput> {
+  if (!input.confidencial) return input
   return {
     ...input,
     titulo: await cifrarCampo(input.titulo),
   }
 }
 
-async function prepararPatch(patch: Partial<BloqueInput>): Promise<Partial<BloqueInput>> {
-  return {
-    ...patch,
-    titulo: patch.titulo === undefined ? undefined : await cifrarCampo(patch.titulo),
-  }
+/** `esConfidencial` decide si `patch.titulo` (si viene) se cifra o queda en claro. */
+async function prepararPatch(
+  patch: Partial<BloqueInput>,
+  esConfidencial: boolean,
+): Promise<Partial<BloqueInput>> {
+  if (patch.titulo === undefined || !esConfidencial) return patch
+  return { ...patch, titulo: await cifrarCampo(patch.titulo) }
 }
 
 /** Bloques que solapan un dia, incluyendo los que cruzan medianoche. */
@@ -136,7 +140,7 @@ export async function updateSerie(serieId: string, input: BloqueInput): Promise<
   const horaIni = horaLocal(input.inicio)
   const horaFin = horaLocal(input.fin)
   const cruzaMedianoche = fechaLocalDeISO(input.fin) !== fechaLocalDeISO(input.inicio)
-  const titulo = (await prepararBloque(input)).titulo // cifra una vez; mismo contenido
+  const titulo = (await prepararBloque(input)).titulo // cifra una vez (si aplica); mismo contenido
 
   await Promise.all(
     (data ?? []).map((b) => {
@@ -151,6 +155,7 @@ export async function updateSerie(serieId: string, input: BloqueInput): Promise<
           fin: combinarFechaHora(cruzaMedianoche ? addDays(f, 1) : f, horaFin),
           protegido: input.protegido,
           importante: input.importante,
+          confidencial: input.confidencial,
           aviso_min_antes: input.aviso_min_antes,
           aviso_enviado: false,
         })
@@ -170,7 +175,7 @@ export async function deleteSerie(serieId: string): Promise<void> {
 
 export async function updateBloque(id: string, patch: Partial<BloqueInput>): Promise<void> {
   // Al editar, re-armamos el aviso por si cambió el horario o la importancia.
-  const campos = await prepararPatch(patch)
+  const campos = await prepararPatch(patch, patch.confidencial ?? false)
   const { error } = await supabase
     .from('bloque')
     .update({ ...campos, aviso_enviado: false })

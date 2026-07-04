@@ -1,5 +1,5 @@
 import { useState, createElement, type FormEvent } from 'react'
-import { Check, X, Shield, Bell } from 'lucide-react'
+import { Check, X, Shield, Bell, ShieldAlert } from 'lucide-react'
 import type { Bloque, TipoBloque } from '../types/database'
 import type { BloqueInput } from '../data/bloques'
 import { TIPO_BLOQUE, TIPOS_BLOQUE } from '../lib/bloqueTipos'
@@ -37,6 +37,7 @@ export function BloqueForm({
   const [horaFin, setHoraFin] = useState(horaInicialFin)
   const [protegido, setProtegido] = useState(initial?.protegido ?? false)
   const [importante, setImportante] = useState(initial?.importante ?? false)
+  const [confidencial, setConfidencial] = useState(initial?.confidencial ?? false)
   const [aviso, setAviso] = useState<string>(
     initial?.aviso_min_antes != null ? String(initial.aviso_min_antes) : '10',
   )
@@ -87,6 +88,7 @@ export function BloqueForm({
       fin: combinarFechaHora(horaFin <= horaInicio ? addDays(f, 1) : f, horaFin),
       protegido,
       importante,
+      confidencial,
       aviso_min_antes: importante ? avisoMin : null,
     })
 
@@ -283,6 +285,22 @@ export function BloqueForm({
           />
           <span className="mono-tag">min antes</span>
         </div>
+      )}
+
+      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', cursor: 'pointer' }}>
+        <input
+          type="checkbox"
+          checked={confidencial}
+          onChange={(e) => setConfidencial(e.target.checked)}
+          style={{ width: 18, height: 18, accentColor: 'var(--sello)' }}
+        />
+        <ShieldAlert size={16} aria-hidden />
+        <span style={{ fontWeight: 600 }}>Confidencial</span>
+      </label>
+      {confidencial && (
+        <p className="mono-tag" style={{ opacity: 0.7, margin: '-0.6rem 0 1rem', lineHeight: 1.4 }}>
+          El título se cifra con tu PIN. Las notificaciones no podrán mostrarlo.
+        </p>
       )}
 
       {!initial && (

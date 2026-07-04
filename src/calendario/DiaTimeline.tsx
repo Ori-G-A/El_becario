@@ -1,5 +1,5 @@
 import { createElement, useRef, useState, type MouseEvent, type PointerEvent } from 'react'
-import { Shield, Bell, Moon } from 'lucide-react'
+import { Shield, Bell, Moon, ShieldAlert } from 'lucide-react'
 import type { Bloque } from '../types/database'
 import { TIPO_BLOQUE } from '../lib/bloqueTipos'
 import { horaLocal, combinarFechaHora } from '../lib/date'
@@ -156,6 +156,7 @@ export function DiaTimeline({
               </strong>
               {b.protegido && <Shield size={11} aria-label="Protegido" />}
               {b.importante && <Bell size={11} aria-label="Importante" />}
+              {b.confidencial && <ShieldAlert size={11} aria-label="Confidencial" />}
               {b.tipo === 'sueno' && <Moon size={11} aria-hidden />}
             </div>
             {alto > 28 && (

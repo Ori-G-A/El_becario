@@ -17,6 +17,7 @@ function bloque(parcial: Partial<Bloque>): Bloque {
     tipo: 'trabajo_profundo',
     protegido: false,
     importante: false,
+    confidencial: false,
     aviso_min_antes: null,
     aviso_enviado: false,
     serie_id: null,

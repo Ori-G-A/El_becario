@@ -96,6 +96,7 @@ const COLUMNAS_PERMITIDAS: Record<TablaRestaurable, readonly string[]> = {
     'tipo',
     'protegido',
     'importante',
+    'confidencial',
     'aviso_min_antes',
     'aviso_enviado',
     'serie_id',

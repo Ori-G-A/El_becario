@@ -155,6 +155,7 @@ export function Top12Module() {
             fin: bloque.fin,
             protegido: false,
             importante: false,
+            confidencial: false,
             aviso_min_antes: null,
           })
         }

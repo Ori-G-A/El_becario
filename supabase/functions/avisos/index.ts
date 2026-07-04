@@ -177,7 +177,7 @@ async function resumenManana(fecha: string): Promise<Resultado> {
         .maybeSingle(),
       supabase
         .from('bloque')
-        .select('inicio')
+        .select('titulo, inicio')
         .eq('user_id', userId)
         .neq('tipo', 'sueno')
         .gte('inicio', desde)
@@ -194,7 +194,10 @@ async function resumenManana(fecha: string): Promise<Resultado> {
     const partes: string[] = []
     if (topGoal) partes.push(`Top Goal: ${tituloLegible(topGoal.titulo, '(confidencial)')}.`)
     if (bloques && bloques.length > 0) {
-      partes.push(`${bloques.length} bloque${bloques.length > 1 ? 's' : ''}, el primero a las ${horaLocalDe(bloques[0].inicio)}.`)
+      const primero = tituloLegible(bloques[0].titulo, 'un bloque confidencial')
+      partes.push(
+        `${bloques.length} bloque${bloques.length > 1 ? 's' : ''}, el primero es "${primero}" a las ${horaLocalDe(bloques[0].inicio)}.`,
+      )
     }
     if (checklist && checklist.length > 0) {
       partes.push(`${checklist.length} pendiente${checklist.length > 1 ? 's' : ''} del día.`)
