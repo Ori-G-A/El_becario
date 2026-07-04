@@ -11,23 +11,27 @@ export function PendienteRapidoForm({
 }: {
   iniciativas: Iniciativa[]
   busy: boolean
-  onCrear: (titulo: string, iniciativaId: string | null) => Promise<void>
+  onCrear: (titulo: string, iniciativaId: string | null, estimacionMin: number | null) => Promise<void>
 }) {
   const [abierto, setAbierto] = useState(false)
   const [titulo, setTitulo] = useState('')
   const [iniciativaId, setIniciativaId] = useState('')
+  const [minutos, setMinutos] = useState('')
 
   function cerrar() {
     setAbierto(false)
     setTitulo('')
     setIniciativaId('')
+    setMinutos('')
   }
 
   async function submit(e: FormEvent) {
     e.preventDefault()
     const limpio = titulo.trim()
     if (!limpio) return
-    await onCrear(limpio, iniciativaId || null)
+    const estimacionMin = minutos.trim() === '' ? null : Number(minutos)
+    if (estimacionMin != null && (!Number.isFinite(estimacionMin) || estimacionMin <= 0)) return
+    await onCrear(limpio, iniciativaId || null, estimacionMin)
     cerrar()
   }
 
@@ -71,6 +75,15 @@ export function PendienteRapidoForm({
           </option>
         ))}
       </select>
+      <input
+        type="number"
+        min={1}
+        value={minutos}
+        onChange={(e) => setMinutos(e.target.value)}
+        placeholder="min. planeados"
+        title="Cuánto tiempo planeas dedicarle (crea un bloque reactivo desde ahora)"
+        style={{ ...inputStyle, flex: '0 1 110px' }}
+      />
       <button type="submit" className="btn" disabled={busy}>
         <Check size={16} aria-hidden />
       </button>

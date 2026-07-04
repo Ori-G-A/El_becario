@@ -95,11 +95,26 @@ export function CalendarioModule() {
       })
   }, [])
 
-  async function crearPendiente(titulo: string, iniciativaId: string | null) {
+  async function crearPendiente(titulo: string, iniciativaId: string | null, estimacionMin: number | null) {
     setBusy(true)
     setError(null)
     try {
-      await crearPendienteRapido(titulo, iniciativaId)
+      const tareaId = await crearPendienteRapido(titulo, iniciativaId, estimacionMin)
+      // Decidir de antemano cuánto tiempo dedicarle: un bloque reactivo desde
+      // ahora, para que el imprevisto también cuente en las métricas de la semana.
+      if (estimacionMin != null) {
+        const inicio = new Date().toISOString()
+        await createBloque({
+          titulo,
+          tarea_id: tareaId,
+          tipo: 'reactivo',
+          inicio,
+          fin: new Date(new Date(inicio).getTime() + estimacionMin * 60_000).toISOString(),
+          protegido: false,
+          importante: false,
+          aviso_min_antes: null,
+        })
+      }
       await load(modo, fechaISO)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No pude crear el pendiente.')

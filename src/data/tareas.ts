@@ -121,27 +121,34 @@ export async function listTareasAgendadas(fechaISO: string): Promise<TareaConAre
 
 /**
  * Pendiente rápido: trabajo reactivo que surge en el momento, sin el ritual
- * de importante/urgente/áreas/estimación. Se agenda para hoy y queda
- * excluido del Top 12 (top12_override='excluir'), para no diluir la lista
- * curada con lo reactivo del día a día. Iniciativa es el único vínculo
- * opcional, para que igual cuente en el dashboard por iniciativa.
+ * de importante/urgente/áreas. Se agenda para hoy y queda excluido del Top 12
+ * (top12_override='excluir'), para no diluir la lista curada con lo reactivo
+ * del día a día. Iniciativa es el único vínculo opcional, para que igual
+ * cuente en el dashboard por iniciativa. Devuelve el id (para, si hay
+ * estimación, encadenar un bloque reactivo — ver CalendarioModule).
  */
 export async function crearPendienteRapido(
   titulo: string,
   iniciativaId: string | null,
-): Promise<void> {
-  const { error } = await supabase.from('tarea').insert({
-    titulo,
-    responsable: 'yo',
-    confidencial: false,
-    iniciativa_id: iniciativaId,
-    importante: false,
-    urgente: false,
-    estimacion_min: null,
-    agendada_para: todayISO(),
-    top12_override: 'excluir',
-  })
+  estimacionMin: number | null,
+): Promise<string> {
+  const { data, error } = await supabase
+    .from('tarea')
+    .insert({
+      titulo,
+      responsable: 'yo',
+      confidencial: false,
+      iniciativa_id: iniciativaId,
+      importante: false,
+      urgente: false,
+      estimacion_min: estimacionMin,
+      agendada_para: todayISO(),
+      top12_override: 'excluir',
+    })
+    .select('id')
+    .single()
   if (error) throw new Error(error.message)
+  return data.id
 }
 
 /** Agenda o saca una tarea del checklist de un día (null = la saca). */
