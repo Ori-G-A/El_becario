@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight, Plus, Target, Trash2, CalendarDays, CalendarRange } from 'lucide-react'
-import type { Bloque } from '../types/database'
+import type { Bloque, Iniciativa } from '../types/database'
 import {
   todayISO,
   addDays,
@@ -29,11 +29,14 @@ import {
   listTareasAgendadas,
   setAgendadaPara,
   setEstadoTarea,
+  crearPendienteRapido,
   type TareaConAreas,
 } from '../data/tareas'
+import { listIniciativas } from '../data/iniciativas'
 import { sumarCafe } from '../easter/cafe'
 import { BloqueForm } from './BloqueForm'
 import { ChecklistDia } from './ChecklistDia'
+import { PendienteRapidoForm } from './PendienteRapidoForm'
 import { DiaTimeline } from './DiaTimeline'
 import { SemanaTimeline } from './SemanaTimeline'
 import { RegistroReal } from './RegistroReal'
@@ -46,6 +49,7 @@ export function CalendarioModule() {
   const [bloques, setBloques] = useState<Bloque[]>([])
   const [tareas, setTareas] = useState<TareaConAreas[]>([])
   const [pendientes, setPendientes] = useState<TareaConAreas[]>([])
+  const [iniciativas, setIniciativas] = useState<Iniciativa[]>([])
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -82,6 +86,27 @@ export function CalendarioModule() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     load(modo, fechaISO)
   }, [modo, fechaISO])
+
+  useEffect(() => {
+    listIniciativas()
+      .then(setIniciativas)
+      .catch(() => {
+        // Sin iniciativas no se bloquea el pendiente rápido: queda "Sin iniciativa".
+      })
+  }, [])
+
+  async function crearPendiente(titulo: string, iniciativaId: string | null) {
+    setBusy(true)
+    setError(null)
+    try {
+      await crearPendienteRapido(titulo, iniciativaId)
+      await load(modo, fechaISO)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No pude crear el pendiente.')
+    } finally {
+      setBusy(false)
+    }
+  }
 
   function navegar(deltaDias: number) {
     setForm((f) => ({ ...f, open: false, editing: null }))
@@ -437,6 +462,9 @@ export function CalendarioModule() {
         <p className="mono-tag">Armando tu {modo === 'dia' ? 'día' : 'semana'}…</p>
       ) : modo === 'dia' ? (
         <>
+          {esHoy && (
+            <PendienteRapidoForm iniciativas={iniciativas} busy={busy} onCrear={crearPendiente} />
+          )}
           <ChecklistDia
             tareas={pendientes}
             busy={busy}
