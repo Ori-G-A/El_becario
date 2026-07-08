@@ -17,6 +17,8 @@ function realMin(b: Bloque): number | null {
 }
 /** Duración efectiva: la real si está registrada, si no la planeada. */
 export function duracionMin(b: Bloque): number {
+  // Reportado como no cumplido: el tiempo no ocurrió, no cuenta en nada.
+  if (b.no_cumplido) return 0
   return realMin(b) ?? planMin(b)
 }
 
@@ -45,11 +47,11 @@ export function calcularMetricas(bloques: Bloque[], ahora = new Date()): Metrica
 
   // Lo planeado cuenta como ocurrido salvo excepción: un bloque de autocuidado
   // que ya pasó se asume respetado aunque no se haya registrado. La acción de
-  // la usuaria es corregir la excepción (borrar/mover el bloque), no registrar
-  // cada uno para que las métricas vivan.
+  // la usuaria es corregir la excepción (reportarlo no cumplido, borrarlo o
+  // moverlo), no registrar cada uno para que las métricas vivan.
   const auto = bloques.filter((b) => b.tipo === 'autocuidado')
   const autoRespetados = auto.filter(
-    (b) => b.real_inicio != null || new Date(b.fin) <= ahora,
+    (b) => !b.no_cumplido && (b.real_inicio != null || new Date(b.fin) <= ahora),
   ).length
 
   let planReal = 0

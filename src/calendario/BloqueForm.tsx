@@ -14,6 +14,7 @@ export function BloqueForm({
   defaultHora,
   esSerie,
   tareas,
+  iniciativas,
   busy,
   onSave,
   onCancel,
@@ -23,6 +24,7 @@ export function BloqueForm({
   defaultHora?: string
   esSerie: boolean
   tareas: { id: string; titulo: string }[]
+  iniciativas: { id: string; nombre: string }[]
   busy: boolean
   onSave: (inputs: BloqueInput[], alcanceSerie?: boolean) => void
   onCancel: () => void
@@ -32,6 +34,7 @@ export function BloqueForm({
 
   const [titulo, setTitulo] = useState(initial?.titulo ?? '')
   const [tareaId, setTareaId] = useState<string>(initial?.tarea_id ?? '')
+  const [iniciativaId, setIniciativaId] = useState<string>(initial?.iniciativa_id ?? '')
   const [tipo, setTipo] = useState<TipoBloque>(initial?.tipo ?? 'trabajo_profundo')
   const [horaInicio, setHoraInicio] = useState(horaInicialInicio)
   const [horaFin, setHoraFin] = useState(horaInicialFin)
@@ -83,6 +86,8 @@ export function BloqueForm({
     const bloqueDe = (f: string): BloqueInput => ({
       titulo: limpio,
       tarea_id: tareaId || null,
+      // Con tarea, la iniciativa viene de la tarea; la directa solo aplica sin tarea.
+      iniciativa_id: tareaId ? null : iniciativaId || null,
       tipo,
       inicio: combinarFechaHora(f, horaInicio),
       fin: combinarFechaHora(horaFin <= horaInicio ? addDays(f, 1) : f, horaFin),
@@ -244,6 +249,27 @@ export function BloqueForm({
             {tareas.map((t) => (
               <option key={t.id} value={t.id}>
                 {t.titulo}
+              </option>
+            ))}
+          </select>
+        </>
+      )}
+
+      {!tareaId && iniciativas.length > 0 && (
+        <>
+          <label className="mono-tag" htmlFor="bloque-iniciativa" style={{ display: 'block', marginBottom: '0.35rem' }}>
+            Iniciativa (opcional)
+          </label>
+          <select
+            id="bloque-iniciativa"
+            value={iniciativaId}
+            onChange={(e) => setIniciativaId(e.target.value)}
+            style={{ ...inputStyle, marginBottom: '0.9rem' }}
+          >
+            <option value="">Sin iniciativa</option>
+            {iniciativas.map((i) => (
+              <option key={i.id} value={i.id}>
+                {i.nombre}
               </option>
             ))}
           </select>

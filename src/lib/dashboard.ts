@@ -75,6 +75,7 @@ export function balanceAreas(
   let sinArea = 0
   for (const b of bloques) {
     const min = duracionMin(b)
+    if (min === 0) continue // no cumplido (o sin duración): no aporta horas
     const ids = b.tarea_id ? (areasDeTarea.get(b.tarea_id) ?? []) : []
     if (ids.length === 0) {
       sinArea += min
@@ -101,7 +102,7 @@ export interface IniciativaBalance {
   rag: EstadoRag
 }
 
-/** Horas por iniciativa (bloque → tarea → iniciativa), coloreadas por su RAG. */
+/** Horas por iniciativa (bloque → tarea → iniciativa, o bloque → iniciativa directo). */
 export function tiempoPorIniciativa(
   bloques: Bloque[],
   iniciativas: Iniciativa[],
@@ -112,10 +113,12 @@ export function tiempoPorIniciativa(
 
   const minPorIni = new Map<string, number>()
   for (const b of bloques) {
-    if (!b.tarea_id) continue
-    const iniId = iniDeTarea.get(b.tarea_id)
+    // La iniciativa de la tarea manda; si no hay, vale la directa del bloque.
+    const iniId = (b.tarea_id ? iniDeTarea.get(b.tarea_id) : null) ?? b.iniciativa_id
     if (!iniId) continue
-    minPorIni.set(iniId, (minPorIni.get(iniId) ?? 0) + duracionMin(b))
+    const min = duracionMin(b)
+    if (min === 0) continue
+    minPorIni.set(iniId, (minPorIni.get(iniId) ?? 0) + min)
   }
 
   const res: IniciativaBalance[] = []
@@ -206,6 +209,7 @@ export function cruceAreaIniciativa(
     const areaIds = areasDeTarea.get(b.tarea_id) ?? []
     if (areaIds.length === 0) continue
     const min = duracionMin(b)
+    if (min === 0) continue
     const m = acc.get(iniId) ?? new Map<string, number>()
     for (const aid of areaIds) {
       m.set(aid, (m.get(aid) ?? 0) + min)

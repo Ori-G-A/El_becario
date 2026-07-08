@@ -162,6 +162,7 @@ export function SemanaTimeline({
                         boxShadow: b.protegido ? 'var(--sombra-dura-sm)' : 'none',
                         cursor: 'pointer',
                         lineHeight: 1.1,
+                        opacity: b.no_cumplido ? 0.55 : 1,
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.15rem' }}>
@@ -177,6 +178,7 @@ export function SemanaTimeline({
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
+                          textDecoration: b.no_cumplido ? 'line-through' : undefined,
                         }}
                       >
                         {b.titulo}

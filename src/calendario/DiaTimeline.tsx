@@ -146,12 +146,20 @@ export function DiaTimeline({
               boxShadow: arrastrando ? 'var(--sombra-dura-sm)' : b.protegido ? 'var(--sombra-dura-sm)' : 'none',
               cursor: arrastrando ? 'grabbing' : 'pointer',
               zIndex: arrastrando ? 2 : undefined,
-              opacity: arrastrando ? 0.9 : 1,
+              opacity: arrastrando ? 0.9 : b.no_cumplido ? 0.55 : 1,
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
               {createElement(cfg.icon, { size: 13, color: cfg.color, 'aria-hidden': true })}
-              <strong style={{ fontSize: '0.82rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <strong
+                style={{
+                  fontSize: '0.82rem',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  textDecoration: b.no_cumplido ? 'line-through' : undefined,
+                }}
+              >
                 {b.titulo}
               </strong>
               {b.protegido && <Shield size={11} aria-label="Protegido" />}
@@ -162,7 +170,7 @@ export function DiaTimeline({
             {alto > 28 && (
               <span className="mono-tag" style={{ opacity: 0.6, fontSize: '0.64rem' }}>
                 {horaLocal(desplazado(b.inicio))}–{horaLocal(desplazado(b.fin))}
-                {completado ? ' · hecho' : ''}
+                {completado ? ' · hecho' : b.no_cumplido ? ' · no cumplido' : ''}
               </span>
             )}
           </button>

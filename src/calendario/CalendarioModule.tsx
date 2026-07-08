@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ChevronLeft, ChevronRight, Plus, Target, Trash2, CalendarDays, CalendarRange } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, Target, Trash2, CalendarDays, CalendarRange, Ban, Undo2 } from 'lucide-react'
 import type { Bloque, Iniciativa } from '../types/database'
 import {
   todayISO,
@@ -23,6 +23,7 @@ import {
   deleteSerie,
   setRealInicio,
   setRealFin,
+  setNoCumplido,
 } from '../data/bloques'
 import {
   listTop12,
@@ -107,6 +108,7 @@ export function CalendarioModule() {
         await createBloque({
           titulo,
           tarea_id: tareaId,
+          iniciativa_id: null, // la tarea ya carga la iniciativa
           tipo: 'reactivo',
           inicio,
           fin: new Date(new Date(inicio).getTime() + estimacionMin * 60_000).toISOString(),
@@ -241,6 +243,27 @@ export function CalendarioModule() {
     }
   }
 
+  async function toggleNoCumplido(b: Bloque) {
+    const valor = !b.no_cumplido
+    setBusy(true)
+    setError(null)
+    try {
+      await setNoCumplido(b.id, valor)
+      // Reportar no cumplido también limpia el registro real (ver data/bloques).
+      const patch = valor
+        ? { no_cumplido: true, real_inicio: null, real_fin: null }
+        : { no_cumplido: false }
+      setBloques((prev) => prev.map((x) => (x.id === b.id ? { ...x, ...patch } : x)))
+      setForm((f) =>
+        f.editing && f.editing.id === b.id ? { ...f, editing: { ...f.editing, ...patch } } : f,
+      )
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No pude guardar el reporte.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   async function togglePendiente(t: TareaConAreas) {
     setBusy(true)
     setError(null)
@@ -276,6 +299,7 @@ export function CalendarioModule() {
         // El bloque no se cifra: si la tarea es confidencial, no copiamos su título.
         titulo: tarea.confidencial ? 'Top Goal protegido' : tarea.titulo,
         tarea_id: tarea.id,
+        iniciativa_id: null,
         tipo: 'top_goal',
         inicio,
         fin: new Date(new Date(inicio).getTime() + 2 * 3600_000).toISOString(),
@@ -423,6 +447,7 @@ export function CalendarioModule() {
             defaultHora={form.hora}
             esSerie={form.editing?.serie_id != null}
             tareas={tareas.map((t) => ({ id: t.id, titulo: t.titulo }))}
+            iniciativas={iniciativas.filter((i) => i.activa).map((i) => ({ id: i.id, nombre: i.nombre }))}
             busy={busy}
             onSave={handleSave}
             onCancel={() => setForm((f) => ({ ...f, open: false, editing: null }))}
@@ -447,6 +472,16 @@ export function CalendarioModule() {
                     {label}
                   </button>
                 ))}
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={() => form.editing && toggleNoCumplido(form.editing)}
+                  disabled={busy}
+                  style={{ background: 'var(--papel)', color: form.editing.no_cumplido ? 'var(--tinta)' : 'var(--rag-ambar)' }}
+                >
+                  {form.editing.no_cumplido ? <Undo2 size={15} aria-hidden /> : <Ban size={15} aria-hidden />}
+                  {form.editing.no_cumplido ? 'Sí lo cumplí' : 'No lo cumplí'}
+                </button>
                 <button
                   type="button"
                   className="btn"

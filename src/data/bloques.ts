@@ -6,6 +6,7 @@ import type { Bloque, TipoBloque } from '../types/database'
 export interface BloqueInput {
   titulo: string
   tarea_id: string | null
+  iniciativa_id: string | null
   tipo: TipoBloque
   inicio: string
   fin: string
@@ -27,6 +28,8 @@ export async function borrarBloquesNoOcurridos(desdeISO: string, hastaISO: strin
     .lt('inicio', hastaISO)
     .is('real_inicio', null)
     .is('real_fin', null)
+    // Un "no cumplido" es un reporte deliberado, no plan olvidado: se conserva.
+    .eq('no_cumplido', false)
   if (error) throw new Error(error.message)
 }
 
@@ -150,6 +153,7 @@ export async function updateSerie(serieId: string, input: BloqueInput): Promise<
         .update({
           titulo,
           tarea_id: input.tarea_id,
+          iniciativa_id: input.iniciativa_id,
           tipo: input.tipo,
           inicio: combinarFechaHora(f, horaIni),
           fin: combinarFechaHora(cruzaMedianoche ? addDays(f, 1) : f, horaFin),
@@ -190,12 +194,29 @@ export async function deleteBloque(id: string): Promise<void> {
 
 /** Marca/desmarca el inicio real de un bloque (un toque). */
 export async function setRealInicio(id: string, valor: string | null): Promise<void> {
-  const { error } = await supabase.from('bloque').update({ real_inicio: valor }).eq('id', id)
+  // Registrar un real contradice el "no cumplido": lo levanta.
+  const { error } = await supabase
+    .from('bloque')
+    .update(valor ? { real_inicio: valor, no_cumplido: false } : { real_inicio: valor })
+    .eq('id', id)
   if (error) throw new Error(error.message)
 }
 
 /** Marca/desmarca el fin real de un bloque (un toque). */
 export async function setRealFin(id: string, valor: string | null): Promise<void> {
-  const { error } = await supabase.from('bloque').update({ real_fin: valor }).eq('id', id)
+  const { error } = await supabase
+    .from('bloque')
+    .update(valor ? { real_fin: valor, no_cumplido: false } : { real_fin: valor })
+    .eq('id', id)
+  if (error) throw new Error(error.message)
+}
+
+/** Reporta (o retira el reporte de) que un bloque no se cumplió. */
+export async function setNoCumplido(id: string, valor: boolean): Promise<void> {
+  // No cumplido y registro real son incompatibles: al reportar, se limpia el real.
+  const { error } = await supabase
+    .from('bloque')
+    .update(valor ? { no_cumplido: true, real_inicio: null, real_fin: null } : { no_cumplido: false })
+    .eq('id', id)
   if (error) throw new Error(error.message)
 }

@@ -9,6 +9,7 @@ function bloque(parcial: Partial<Bloque>): Bloque {
     id: 'x',
     user_id: 'u',
     tarea_id: null,
+    iniciativa_id: null,
     titulo: 't',
     inicio: '2026-07-02T09:00:00',
     fin: '2026-07-02T10:00:00',
@@ -18,6 +19,7 @@ function bloque(parcial: Partial<Bloque>): Bloque {
     protegido: false,
     importante: false,
     confidencial: false,
+    no_cumplido: false,
     aviso_min_antes: null,
     aviso_enviado: false,
     serie_id: null,
@@ -47,4 +49,25 @@ test('autocuidado futuro sin registro aun no cuenta', () => {
 test('horas trabajadas usan el plan cuando no hay registro', () => {
   const m = calcularMetricas([bloque({})], AHORA)
   expect(m.horasTrabajadas).toBe(1)
+})
+
+test('un bloque reportado como no cumplido no suma horas', () => {
+  const m = calcularMetricas([bloque({ no_cumplido: true })], AHORA)
+  expect(m.horasTrabajadas).toBe(0)
+})
+
+test('autocuidado pasado pero no cumplido no cuenta como respetado', () => {
+  const m = calcularMetricas(
+    [
+      bloque({
+        tipo: 'autocuidado',
+        inicio: '2026-07-02T12:00:00',
+        fin: '2026-07-02T13:00:00',
+        no_cumplido: true,
+      }),
+    ],
+    AHORA,
+  )
+  expect(m.autoRespetados).toBe(0)
+  expect(m.pctAutocuidado).toBe(0)
 })

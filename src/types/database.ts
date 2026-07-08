@@ -101,6 +101,8 @@ export type Bloque = {
   id: string
   user_id: string
   tarea_id: string | null
+  /** Iniciativa directa (fallback: si hay tarea, manda la iniciativa de la tarea). */
+  iniciativa_id: string | null
   titulo: string
   inicio: string
   fin: string
@@ -110,6 +112,8 @@ export type Bloque = {
   protegido: boolean
   importante: boolean
   confidencial: boolean
+  /** Reportado como no cumplido: el plan queda, pero no cuenta en métricas. */
+  no_cumplido: boolean
   aviso_min_antes: number | null
   aviso_enviado: boolean
   serie_id: string | null
@@ -196,12 +200,14 @@ export interface Database {
           | 'id'
           | 'user_id'
           | 'tarea_id'
+          | 'iniciativa_id'
           | 'real_inicio'
           | 'real_fin'
           | 'tipo'
           | 'protegido'
           | 'importante'
           | 'confidencial'
+          | 'no_cumplido'
           | 'aviso_min_antes'
           | 'aviso_enviado'
           | 'serie_id'

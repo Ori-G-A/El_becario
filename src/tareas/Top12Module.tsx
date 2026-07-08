@@ -150,6 +150,7 @@ export function Top12Module() {
           await createBloque({
             titulo: input.confidencial ? 'Bloque protegido' : input.titulo,
             tarea_id: creada.id,
+            iniciativa_id: null, // la tarea ya carga la iniciativa
             tipo: bloque.tipo,
             inicio: bloque.inicio,
             fin: bloque.fin,
