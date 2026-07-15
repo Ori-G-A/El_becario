@@ -155,3 +155,4 @@ vite.config.ts.timestamp-*
 
 # Script personal de carga del plan (datos privados, no publicar)
 scripts/cargar-plan.mjs
+scripts/cargar-plan.sql
