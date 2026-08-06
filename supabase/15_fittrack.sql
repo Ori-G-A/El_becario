@@ -92,7 +92,13 @@ begin
     return 'bloque creado';
   end if;
 
-  update bloque set real_inicio = p_inicio, real_fin = fin, no_cumplido = false
+  -- La primera hora que llega manda: FitTrack reenvía su historial completo cada
+  -- vez que guardas algo, y sin este coalesce el bloque se mudaría a la hora del
+  -- último guardado. Los minutos sí se actualizan.
+  update bloque
+     set real_inicio = coalesce(real_inicio, p_inicio),
+         real_fin    = coalesce(real_inicio, p_inicio) + make_interval(mins => p_minutos),
+         no_cumplido = false
    where id = blq;
   return 'bloque actualizado';
 end $$;
