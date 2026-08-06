@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Check, History } from 'lucide-react'
 import type { EstadoRag, RevisionSemanal } from '../types/database'
-import { mondayISO, formatFechaLarga } from '../lib/date'
+import { mondayISO, formatFechaLarga, lunesDe, todayISO } from '../lib/date'
 import { listRevisiones, getRevision, upsertRevision } from '../data/revisiones'
 import { listBloquesDeSemana } from '../data/bloques'
 import { calcularMetricas, type MetricasSemana } from '../lib/metricas'
@@ -21,7 +21,8 @@ const RAG_VAR: Record<EstadoRag, string> = {
 }
 
 export function RevisionModule() {
-  const semana = mondayISO()
+  // La revisión no tiene que ser el domingo: se elige qué semana se está revisando.
+  const [semana, setSemana] = useState(mondayISO())
   const [rag, setRag] = useState<EstadoRag | null>(null)
   const [notas, setNotas] = useState('')
   const [historial, setHistorial] = useState<RevisionSemanal[]>([])
@@ -34,6 +35,7 @@ export function RevisionModule() {
   async function load() {
     setLoading(true)
     setError(null)
+    setGuardado(false)
     try {
       const [actual, todas, bloques] = await Promise.all([
         getRevision(semana),
@@ -55,7 +57,7 @@ export function RevisionModule() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     load()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [semana])
 
   async function guardar() {
     setBusy(true)
@@ -79,9 +81,38 @@ export function RevisionModule() {
       <h1 style={{ fontSize: 'clamp(1.8rem, 6vw, 2.6rem)', marginBottom: '0.3rem' }}>
         Revisión
       </h1>
-      <p className="mono-tag" style={{ opacity: 0.7, marginBottom: '1.25rem' }}>
-        Semana del {formatFechaLarga(semana)}
-      </p>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.6rem',
+          flexWrap: 'wrap',
+          marginBottom: '1.25rem',
+        }}
+      >
+        <label className="mono-tag" htmlFor="semana" style={{ opacity: 0.7 }}>
+          Semana del {formatFechaLarga(semana)}
+        </label>
+        {/* Cualquier día sirve: se guarda el lunes de esa semana. */}
+        <input
+          id="semana"
+          type="date"
+          value={semana}
+          max={todayISO()}
+          onChange={(e) => e.target.value && setSemana(lunesDe(e.target.value))}
+          style={{ ...inputStyle, width: 'auto', padding: '0.3rem 0.5rem' }}
+        />
+        {semana !== mondayISO() && (
+          <button
+            type="button"
+            className="btn"
+            onClick={() => setSemana(mondayISO())}
+            style={{ background: 'var(--papel)', color: 'var(--tinta)' }}
+          >
+            Esta semana
+          </button>
+        )}
+      </div>
 
       {error && (
         <p
@@ -160,7 +191,23 @@ export function RevisionModule() {
                           {RAG_LABEL[r.rag_global]}
                         </span>
                       )}
-                      <strong>{formatFechaLarga(r.semana)}</strong>
+                      <button
+                        type="button"
+                        onClick={() => setSemana(r.semana)}
+                        title="Abrir esta semana para editarla"
+                        style={{
+                          border: 'none',
+                          background: 'none',
+                          padding: 0,
+                          cursor: 'pointer',
+                          font: 'inherit',
+                          fontWeight: 700,
+                          color: 'inherit',
+                          textAlign: 'left',
+                        }}
+                      >
+                        {formatFechaLarga(r.semana)}
+                      </button>
                     </div>
                     {r.notas && (
                       <p style={{ opacity: 0.8, margin: '0.4rem 0 0', whiteSpace: 'pre-wrap' }}>
