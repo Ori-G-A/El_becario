@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase'
 import { cifrarCampo, descifrarCampo } from '../lib/cripto'
-import type { EstadoRag, Iniciativa } from '../types/database'
+import type { CategoriaIniciativa, EstadoRag, Iniciativa } from '../types/database'
 
 export interface IniciativaInput {
   nombre: string
@@ -8,6 +8,8 @@ export interface IniciativaInput {
   stl_responsable: string
   es_equipo: boolean
   estado_rag: EstadoRag
+  /** Etiqueta fija que lee amiga (migración 14). Obligatoria al crear/editar. */
+  categoria: CategoriaIniciativa
 }
 
 async function descifrarIniciativa(row: Iniciativa): Promise<Iniciativa> {
@@ -115,24 +117,66 @@ export const INICIATIVAS_SUGERIDAS: Omit<IniciativaInput, 'estado_rag'>[] = [
     descripcion: 'Tiempo de calidad y tareas de apoyo: regalos, ayudas, presencia.',
     stl_responsable: 'yo',
     es_equipo: false,
+    categoria: 'libre',
   },
   {
     nombre: 'Esposo',
     descripcion: 'Tiempo de calidad, ocio y cuidado: trámites y citas médicas.',
     stl_responsable: 'yo',
     es_equipo: false,
+    categoria: 'libre',
   },
   {
     nombre: 'Universidad',
     descripcion: 'Pendientes del semestre: entregas de las materias matriculadas y papelería.',
     stl_responsable: 'yo',
     es_equipo: false,
+    categoria: 'trabajo',
   },
   {
     nombre: 'Colegio',
     descripcion: 'Trabajo diario (lun-vie) y papelería de gestión: planillas, observadores, etc.',
     stl_responsable: 'yo',
     es_equipo: false,
+    categoria: 'trabajo',
+  },
+  // Iniciativas permanentes de autocuidado: son el único lugar donde un bloque
+  // de autocuidado consigue su segmento (ejercicio ≠ comida ≠ traslado…).
+  // Sin ellas, la vista `uso_del_tiempo` los devuelve sin clasificar.
+  {
+    nombre: 'Ejercicio',
+    descripcion: 'Gimnasio, caminata, deporte, estiramiento.',
+    stl_responsable: 'yo',
+    es_equipo: false,
+    categoria: 'ejercicio',
+  },
+  {
+    nombre: 'Comida',
+    descripcion: 'Comer, cocinar, mercado, sobremesa.',
+    stl_responsable: 'yo',
+    es_equipo: false,
+    categoria: 'comida',
+  },
+  {
+    nombre: 'Traslado',
+    descripcion: 'Tiempo en movimiento entre dos lugares.',
+    stl_responsable: 'yo',
+    es_equipo: false,
+    categoria: 'traslado',
+  },
+  {
+    nombre: 'Cuidado personal',
+    descripcion: 'Aseo, salud, casa, trámites del cuerpo.',
+    stl_responsable: 'yo',
+    es_equipo: false,
+    categoria: 'cuidado_personal',
+  },
+  {
+    nombre: 'Tiempo libre',
+    descripcion: 'Ocio sin entregable: leer por gusto, gente querida, no hacer nada.',
+    stl_responsable: 'yo',
+    es_equipo: false,
+    categoria: 'libre',
   },
 ]
 

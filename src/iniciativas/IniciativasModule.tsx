@@ -12,6 +12,7 @@ import {
   seedIniciativasSugeridas,
 } from '../data/iniciativas'
 import { RagSelector } from '../components/RagSelector'
+import { CATEGORIA_INICIATIVA } from '../lib/categorias'
 import { IniciativaForm } from './IniciativaForm'
 
 export function IniciativasModule() {
@@ -209,6 +210,27 @@ export function IniciativasModule() {
                       {ini.es_equipo ? <Users size={12} aria-hidden /> : <User size={12} aria-hidden />}
                       {ini.es_equipo ? 'Equipo' : 'Personal'}
                     </span>
+                    {ini.categoria ? (
+                      <span className="mono-tag" style={{ opacity: 0.7 }}>
+                        {CATEGORIA_INICIATIVA[ini.categoria].label}
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        className="mono-tag"
+                        onClick={() => setForm({ open: true, editing: ini })}
+                        style={{
+                          border: 'none',
+                          background: 'none',
+                          padding: 0,
+                          cursor: 'pointer',
+                          color: 'var(--rag-rojo)',
+                          fontWeight: 600,
+                        }}
+                      >
+                        Sin categoría
+                      </button>
+                    )}
                   </div>
                   {ini.descripcion && (
                     <p style={{ opacity: 0.8, margin: '0.25rem 0 0', fontSize: '0.92rem' }}>

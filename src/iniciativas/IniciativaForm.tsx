@@ -1,9 +1,10 @@
 import { useState, type FormEvent } from 'react'
 import { Check, X, Users, User } from 'lucide-react'
-import type { EstadoRag, Iniciativa } from '../types/database'
+import type { CategoriaIniciativa, EstadoRag, Iniciativa } from '../types/database'
 import type { IniciativaInput } from '../data/iniciativas'
 import { RagSelector } from '../components/RagSelector'
 import { inputStyle } from '../components/styles'
+import { CATEGORIA_INICIATIVA, CATEGORIAS_INICIATIVA } from '../lib/categorias'
 
 export function IniciativaForm({
   initial,
@@ -21,6 +22,7 @@ export function IniciativaForm({
   const [stl, setStl] = useState(initial?.stl_responsable ?? 'yo')
   const [esEquipo, setEsEquipo] = useState(initial?.es_equipo ?? false)
   const [rag, setRag] = useState<EstadoRag>(initial?.estado_rag ?? 'ambar')
+  const [categoria, setCategoria] = useState<CategoriaIniciativa | ''>(initial?.categoria ?? '')
   const [error, setError] = useState<string | null>(null)
 
   function submit(e: FormEvent) {
@@ -30,12 +32,17 @@ export function IniciativaForm({
       setError('Ponle un nombre a la iniciativa.')
       return
     }
+    if (!categoria) {
+      setError('Elige una categoría: es la etiqueta que lee amiga y no debería cambiar después.')
+      return
+    }
     onSave({
       nombre: limpio,
       descripcion: descripcion.trim() || null,
       stl_responsable: stl.trim() || 'yo',
       es_equipo: esEquipo,
       estado_rag: rag,
+      categoria,
     })
   }
 
@@ -69,6 +76,28 @@ export function IniciativaForm({
         rows={2}
         style={{ ...inputStyle, marginBottom: '0.9rem', resize: 'vertical', fontFamily: 'var(--font-body)' }}
       />
+
+      <label className="mono-tag" htmlFor="ini-categoria" style={{ display: 'block', marginBottom: '0.35rem' }}>
+        Categoría (fija)
+      </label>
+      <select
+        id="ini-categoria"
+        value={categoria}
+        onChange={(e) => setCategoria(e.target.value as CategoriaIniciativa | '')}
+        style={{ ...inputStyle, marginBottom: '0.35rem' }}
+      >
+        <option value="">Elegir…</option>
+        {CATEGORIAS_INICIATIVA.map((c) => (
+          <option key={c} value={c}>
+            {CATEGORIA_INICIATIVA[c].label}
+          </option>
+        ))}
+      </select>
+      <p style={{ opacity: 0.75, fontSize: '0.85rem', margin: '0 0 0.9rem' }}>
+        {categoria
+          ? CATEGORIA_INICIATIVA[categoria].ayuda
+          : 'Define cómo cuenta el tiempo de esta iniciativa. Elígela una vez y no la muevas.'}
+      </p>
 
       <label className="mono-tag" htmlFor="ini-stl" style={{ display: 'block', marginBottom: '0.35rem' }}>
         STL (encargado)

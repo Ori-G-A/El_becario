@@ -16,6 +16,20 @@ export type TipoBloque =
   | 'autocuidado'
   | 'sueno'
 
+/** Taxonomía fija que consume `amiga` (migración 14). */
+export type CategoriaVida =
+  | 'trabajo'
+  | 'sueno'
+  | 'foco_profundo'
+  | 'ejercicio'
+  | 'cuidado_personal'
+  | 'comida'
+  | 'traslado'
+  | 'libre'
+
+/** Lo que se elige a mano: `sueno` y `foco_profundo` los deriva la vista. */
+export type CategoriaIniciativa = Exclude<CategoriaVida, 'sueno' | 'foco_profundo'>
+
 // NOTA: estos modelos son `type` (no `interface`) a propósito. Un `interface`
 // no es asignable a `Record<string, unknown>`, y el cliente de Supabase exige
 // esa forma (GenericTable) para inferir Row/Insert/Update; con interface, todo
@@ -39,6 +53,8 @@ export type Iniciativa = {
   stl_responsable: string
   es_equipo: boolean
   estado_rag: EstadoRag
+  /** null = sin clasificar (iniciativas creadas antes de la migración 14). */
+  categoria: CategoriaIniciativa | null
   orden_prioridad: number
   activa: boolean
   creada_en: string
@@ -149,6 +165,7 @@ export interface Database {
           | 'stl_responsable'
           | 'es_equipo'
           | 'estado_rag'
+          | 'categoria'
           | 'orden_prioridad'
           | 'activa'
           | 'creada_en'
@@ -242,6 +259,7 @@ export interface Database {
       estado_rag: EstadoRag
       estado_tarea: EstadoTarea
       tipo_bloque: TipoBloque
+      categoria_vida: CategoriaVida
     }
     CompositeTypes: Record<string, never>
   }
