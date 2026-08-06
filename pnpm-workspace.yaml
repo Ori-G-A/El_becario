@@ -1,0 +1,6 @@
+# Parches de advisories en dependencias transitivas (solo dev/build).
+overrides:
+  brace-expansion@2: ^2.1.4
+  brace-expansion@>=4: ^5.0.9
+  fast-uri: ^3.1.5
+  postcss: ^8.5.23
