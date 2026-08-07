@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight, Plus, Target, Trash2, CalendarDays, CalendarRange, Ban, Undo2 } from 'lucide-react'
-import type { Bloque, Iniciativa } from '../types/database'
+import type { Area, Bloque, Iniciativa } from '../types/database'
 import {
   todayISO,
   addDays,
@@ -34,6 +34,7 @@ import {
   type TareaConAreas,
 } from '../data/tareas'
 import { listIniciativas } from '../data/iniciativas'
+import { listAreas } from '../data/areas'
 import { sumarCafe } from '../easter/cafe'
 import { BloqueForm } from './BloqueForm'
 import { ChecklistDia } from './ChecklistDia'
@@ -51,6 +52,7 @@ export function CalendarioModule() {
   const [tareas, setTareas] = useState<TareaConAreas[]>([])
   const [pendientes, setPendientes] = useState<TareaConAreas[]>([])
   const [iniciativas, setIniciativas] = useState<Iniciativa[]>([])
+  const [areas, setAreas] = useState<Area[]>([])
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -93,6 +95,11 @@ export function CalendarioModule() {
       .then(setIniciativas)
       .catch(() => {
         // Sin iniciativas no se bloquea el pendiente rápido: queda "Sin iniciativa".
+      })
+    listAreas()
+      .then(setAreas)
+      .catch(() => {
+        // Sin áreas los desplegables del bloque siguen sirviendo, solo sin filtrar.
       })
   }, [])
 
@@ -446,8 +453,9 @@ export function CalendarioModule() {
             fechaISO={form.fecha}
             defaultHora={form.hora}
             esSerie={form.editing?.serie_id != null}
-            tareas={tareas.map((t) => ({ id: t.id, titulo: t.titulo }))}
-            iniciativas={iniciativas.filter((i) => i.activa).map((i) => ({ id: i.id, nombre: i.nombre }))}
+            tareas={tareas.map((t) => ({ id: t.id, titulo: t.titulo, iniciativa_id: t.iniciativa_id }))}
+            iniciativas={iniciativas}
+            areas={areas}
             busy={busy}
             onSave={handleSave}
             onCancel={() => setForm((f) => ({ ...f, open: false, editing: null }))}

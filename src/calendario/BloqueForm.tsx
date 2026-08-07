@@ -1,6 +1,6 @@
-import { useState, createElement, type FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import { Check, X, Shield, Bell, ShieldAlert } from 'lucide-react'
-import type { Bloque, TipoBloque } from '../types/database'
+import type { Area, Bloque, Iniciativa, TipoBloque } from '../types/database'
 import type { BloqueInput } from '../data/bloques'
 import { TIPO_BLOQUE, TIPOS_BLOQUE } from '../lib/bloqueTipos'
 import { combinarFechaHora, horaLocal, addDays, fechasEntre, masUnaHora } from '../lib/date'
@@ -15,6 +15,7 @@ export function BloqueForm({
   esSerie,
   tareas,
   iniciativas,
+  areas,
   busy,
   onSave,
   onCancel,
@@ -23,8 +24,9 @@ export function BloqueForm({
   fechaISO: string
   defaultHora?: string
   esSerie: boolean
-  tareas: { id: string; titulo: string }[]
-  iniciativas: { id: string; nombre: string }[]
+  tareas: { id: string; titulo: string; iniciativa_id: string | null }[]
+  iniciativas: Iniciativa[]
+  areas: Area[]
   busy: boolean
   onSave: (inputs: BloqueInput[], alcanceSerie?: boolean) => void
   onCancel: () => void
@@ -32,9 +34,20 @@ export function BloqueForm({
   const horaInicialInicio = initial ? horaLocal(initial.inicio) : (defaultHora ?? '09:00')
   const horaInicialFin = initial ? horaLocal(initial.fin) : masUnaHora(horaInicialInicio)
 
+  // La iniciativa del bloque puede venir de la tarea (migración 13) o ser directa.
+  const iniDeTarea = (id: string) => tareas.find((t) => t.id === id)?.iniciativa_id ?? ''
+  const areaDeIni = (id: string) => iniciativas.find((i) => i.id === id)?.area_id ?? ''
+
   const [titulo, setTitulo] = useState(initial?.titulo ?? '')
   const [tareaId, setTareaId] = useState<string>(initial?.tarea_id ?? '')
-  const [iniciativaId, setIniciativaId] = useState<string>(initial?.iniciativa_id ?? '')
+  const [iniciativaId, setIniciativaId] = useState<string>(
+    (initial?.tarea_id ? iniDeTarea(initial.tarea_id) : initial?.iniciativa_id) ?? '',
+  )
+  // Solo filtra y muestra la cadena: el área del bloque sale de la iniciativa
+  // (migración 16), no se guarda en `bloque`.
+  const [areaId, setAreaId] = useState<string>(
+    areaDeIni((initial?.tarea_id ? iniDeTarea(initial.tarea_id) : initial?.iniciativa_id) ?? ''),
+  )
   const [tipo, setTipo] = useState<TipoBloque>(initial?.tipo ?? 'trabajo_profundo')
   const [horaInicio, setHoraInicio] = useState(horaInicialInicio)
   const [horaFin, setHoraFin] = useState(horaInicialFin)
@@ -60,13 +73,47 @@ export function BloqueForm({
     })
   }
 
-  function onTareaChange(id: string) {
-    setTareaId(id)
-    if (!titulo.trim() && id) {
-      const t = tareas.find((x) => x.id === id)
-      if (t) setTitulo(t.titulo)
+  // Cascada área → iniciativa → tarea. Elegir abajo rellena arriba; elegir
+  // arriba limpia lo de abajo que ya no encaje. Nunca queda una combinación que
+  // se contradiga a sí misma.
+  function onAreaChange(id: string) {
+    setAreaId(id)
+    if (id && iniciativaId && areaDeIni(iniciativaId) !== id) {
+      setIniciativaId('')
+      setTareaId('')
     }
   }
+
+  function onIniciativaChange(id: string) {
+    setIniciativaId(id)
+    if (id) setAreaId(areaDeIni(id))
+    if (tareaId && iniDeTarea(tareaId) !== id) setTareaId('')
+  }
+
+  function onTareaChange(id: string) {
+    setTareaId(id)
+    if (id) {
+      const ini = iniDeTarea(id)
+      setIniciativaId(ini)
+      setAreaId(areaDeIni(ini))
+      if (!titulo.trim()) {
+        const t = tareas.find((x) => x.id === id)
+        if (t) setTitulo(t.titulo)
+      }
+    }
+  }
+
+  // Lo ya elegido nunca se filtra afuera: al editar un bloque viejo su iniciativa
+  // puede estar finalizada, o su tarea fuera del Top 12 de hoy, y el desplegable
+  // saldría en blanco como si no tuviera nada.
+  const iniciativasVisibles = iniciativas.filter(
+    (i) => i.id === iniciativaId || (i.activa && (!areaId || i.area_id === areaId)),
+  )
+  const tareasVisibles = tareas.filter(
+    (t) => t.id === tareaId || !iniciativaId || t.iniciativa_id === iniciativaId,
+  )
+  const areaElegida = areas.find((a) => a.id === areaId)
+  const iniElegida = iniciativas.find((i) => i.id === iniciativaId)
 
   function submit(e: FormEvent) {
     e.preventDefault()
@@ -201,79 +248,81 @@ export function BloqueForm({
         </p>
       )}
 
-      <p className="mono-tag" style={{ marginBottom: '0.4rem' }}>Tipo</p>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '0.9rem' }}>
-        {TIPOS_BLOQUE.map((t) => {
-          const cfg = TIPO_BLOQUE[t]
-          const on = tipo === t
-          return (
-            <button
-              key={t}
-              type="button"
-              onClick={() => setTipo(t)}
-              aria-pressed={on}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.35rem',
-                padding: '0.3rem 0.6rem',
-                border: 'var(--borde)',
-                borderRadius: 'var(--radio)',
-                background: on ? cfg.color : 'var(--papel)',
-                color: on ? '#fff' : 'var(--tinta)',
-                boxShadow: on ? 'var(--sombra-dura-sm)' : 'none',
-                cursor: 'pointer',
-                fontWeight: 600,
-                fontSize: '0.85rem',
-              }}
-            >
-              {createElement(cfg.icon, { size: 14, color: on ? '#fff' : cfg.color, 'aria-hidden': true })}
-              {cfg.label}
-            </button>
-          )
-        })}
+      <label className="mono-tag" htmlFor="bloque-tipo" style={{ display: 'block', marginBottom: '0.35rem' }}>
+        Tipo — cómo usas el tiempo
+      </label>
+      <select
+        id="bloque-tipo"
+        value={tipo}
+        onChange={(e) => setTipo(e.target.value as TipoBloque)}
+        style={{ ...inputStyle, marginBottom: '0.35rem' }}
+      >
+        {TIPOS_BLOQUE.map((t) => (
+          <option key={t} value={t}>
+            {TIPO_BLOQUE[t].label}
+          </option>
+        ))}
+      </select>
+      <p style={{ opacity: 0.75, fontSize: '0.85rem', margin: '0 0 0.9rem' }}>
+        {TIPO_BLOQUE[tipo].ayuda}
+      </p>
+
+      <p className="mono-tag" style={{ marginBottom: '0.35rem' }}>Para qué es este tiempo</p>
+      <div style={{ display: 'grid', gap: '0.5rem', marginBottom: '0.35rem' }}>
+        <select
+          aria-label="Área de vida"
+          value={areaId}
+          onChange={(e) => onAreaChange(e.target.value)}
+          style={inputStyle}
+        >
+          <option value="">Área — todas</option>
+          {areas.map((a) => (
+            <option key={a.id} value={a.id}>
+              {a.nombre}
+            </option>
+          ))}
+        </select>
+
+        <select
+          aria-label="Iniciativa"
+          value={iniciativaId}
+          onChange={(e) => onIniciativaChange(e.target.value)}
+          style={inputStyle}
+        >
+          <option value="">Iniciativa — sin elegir</option>
+          {iniciativasVisibles.map((i) => (
+            <option key={i.id} value={i.id}>
+              {i.nombre}
+            </option>
+          ))}
+        </select>
+
+        <select
+          aria-label="Tarea"
+          value={tareaId}
+          onChange={(e) => onTareaChange(e.target.value)}
+          style={inputStyle}
+        >
+          <option value="">Tarea — opcional</option>
+          {tareasVisibles.map((t) => (
+            <option key={t.id} value={t.id}>
+              {t.titulo}
+            </option>
+          ))}
+        </select>
       </div>
 
-      {tareas.length > 0 && (
-        <>
-          <label className="mono-tag" htmlFor="bloque-tarea" style={{ display: 'block', marginBottom: '0.35rem' }}>
-            Tarea (opcional)
-          </label>
-          <select
-            id="bloque-tarea"
-            value={tareaId}
-            onChange={(e) => onTareaChange(e.target.value)}
-            style={{ ...inputStyle, marginBottom: '0.9rem' }}
-          >
-            <option value="">Sin tarea</option>
-            {tareas.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.titulo}
-              </option>
-            ))}
-          </select>
-        </>
-      )}
-
-      {!tareaId && iniciativas.length > 0 && (
-        <>
-          <label className="mono-tag" htmlFor="bloque-iniciativa" style={{ display: 'block', marginBottom: '0.35rem' }}>
-            Iniciativa (opcional)
-          </label>
-          <select
-            id="bloque-iniciativa"
-            value={iniciativaId}
-            onChange={(e) => setIniciativaId(e.target.value)}
-            style={{ ...inputStyle, marginBottom: '0.9rem' }}
-          >
-            <option value="">Sin iniciativa</option>
-            {iniciativas.map((i) => (
-              <option key={i.id} value={i.id}>
-                {i.nombre}
-              </option>
-            ))}
-          </select>
-        </>
+      {iniElegida ? (
+        <p className="mono-tag" style={{ opacity: 0.75, margin: '0 0 0.9rem', lineHeight: 1.4 }}>
+          Le reporta a: {areaElegida?.nombre ?? 'sin área'} · {iniElegida.nombre}
+        </p>
+      ) : (
+        <p
+          className="mono-tag"
+          style={{ color: 'var(--rag-rojo)', fontWeight: 600, margin: '0 0 0.9rem', lineHeight: 1.4 }}
+        >
+          Sin iniciativa este tiempo llega sin clasificar. Elige una y el área viene sola.
+        </p>
       )}
 
       <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.6rem', cursor: 'pointer' }}>

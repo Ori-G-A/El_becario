@@ -24,7 +24,8 @@ test('el sueño que cruza la medianoche se puede agendar', async ({ page }) => {
 
   // El form debe entender que cruza la medianoche (antes lo rechazaba).
   await expect(page.getByText(/Termina al día siguiente/)).toBeVisible()
-  await page.getByRole('button', { name: 'Sueño', exact: true }).click()
+  await page.locator('#bloque-tipo').selectOption('sueno')
+  await expect(page.getByText(/Fuera del techo de 40 h/)).toBeVisible()
   await page.getByRole('button', { name: 'Agendar' }).click()
 
   // El bloque aparece en el timeline.
