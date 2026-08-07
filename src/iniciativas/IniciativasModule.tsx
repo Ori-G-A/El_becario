@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Plus, Pencil, Trash2, Users, User, Check, RotateCcw, Sparkles } from 'lucide-react'
-import type { EstadoRag, Iniciativa } from '../types/database'
+import type { Area, EstadoRag, Iniciativa } from '../types/database'
+import { listAreas } from '../data/areas'
 import {
   type IniciativaInput,
   listIniciativasTodas,
@@ -15,8 +16,30 @@ import { RagSelector } from '../components/RagSelector'
 import { CATEGORIA_INICIATIVA } from '../lib/categorias'
 import { IniciativaForm } from './IniciativaForm'
 
+/** Etiqueta que falta y sin la cual amiga recibe el tiempo cojo. Lleva al form. */
+function FaltaEtiqueta({ texto, onClick }: { texto: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      className="mono-tag"
+      onClick={onClick}
+      style={{
+        border: 'none',
+        background: 'none',
+        padding: 0,
+        cursor: 'pointer',
+        color: 'var(--rag-rojo)',
+        fontWeight: 600,
+      }}
+    >
+      {texto}
+    </button>
+  )
+}
+
 export function IniciativasModule() {
   const [items, setItems] = useState<Iniciativa[]>([])
+  const [areas, setAreas] = useState<Area[]>([])
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -29,7 +52,9 @@ export function IniciativasModule() {
     setLoading(true)
     setError(null)
     try {
-      setItems(await listIniciativasTodas())
+      const [inis, ars] = await Promise.all([listIniciativasTodas(), listAreas()])
+      setItems(inis)
+      setAreas(ars)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No pude cargar las iniciativas.')
     } finally {
@@ -161,6 +186,7 @@ export function IniciativasModule() {
       {form.open && (
         <IniciativaForm
           initial={form.editing}
+          areas={areas}
           busy={busy}
           onSave={handleSave}
           onCancel={() => setForm({ open: false, editing: null })}
@@ -215,21 +241,14 @@ export function IniciativasModule() {
                         {CATEGORIA_INICIATIVA[ini.categoria].label}
                       </span>
                     ) : (
-                      <button
-                        type="button"
-                        className="mono-tag"
-                        onClick={() => setForm({ open: true, editing: ini })}
-                        style={{
-                          border: 'none',
-                          background: 'none',
-                          padding: 0,
-                          cursor: 'pointer',
-                          color: 'var(--rag-rojo)',
-                          fontWeight: 600,
-                        }}
-                      >
-                        Sin categoría
-                      </button>
+                      <FaltaEtiqueta texto="Sin categoría" onClick={() => setForm({ open: true, editing: ini })} />
+                    )}
+                    {areas.find((a) => a.id === ini.area_id) ? (
+                      <span className="mono-tag" style={{ opacity: 0.7 }}>
+                        {areas.find((a) => a.id === ini.area_id)?.nombre}
+                      </span>
+                    ) : (
+                      <FaltaEtiqueta texto="Sin área" onClick={() => setForm({ open: true, editing: ini })} />
                     )}
                   </div>
                   {ini.descripcion && (

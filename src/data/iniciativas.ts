@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase'
+import { listAreas } from './areas'
 import { cifrarCampo, descifrarCampo } from '../lib/cripto'
 import type { CategoriaIniciativa, EstadoRag, Iniciativa } from '../types/database'
 
@@ -10,6 +11,8 @@ export interface IniciativaInput {
   estado_rag: EstadoRag
   /** Etiqueta fija que lee amiga (migración 14). Obligatoria al crear/editar. */
   categoria: CategoriaIniciativa
+  /** Área de vida (migración 16). Es lo que hace que el área llegue a amiga. */
+  area_id: string | null
 }
 
 async function descifrarIniciativa(row: Iniciativa): Promise<Iniciativa> {
@@ -110,9 +113,16 @@ export async function deleteIniciativa(id: string): Promise<void> {
   if (error) throw new Error(error.message)
 }
 
-/** Iniciativas sugeridas por área (personales, STL = yo). */
-export const INICIATIVAS_SUGERIDAS: Omit<IniciativaInput, 'estado_rag'>[] = [
+/**
+ * Iniciativas sugeridas por área (personales, STL = yo). `area` es el NOMBRE del
+ * área con la que se vincula al sembrarlas; las que no tienen una obvia quedan
+ * sin área y el formulario las reclama.
+ */
+export const INICIATIVAS_SUGERIDAS: (Omit<IniciativaInput, 'estado_rag' | 'area_id'> & {
+  area?: string
+})[] = [
   {
+    area: 'Familia',
     nombre: 'Familia',
     descripcion: 'Tiempo de calidad y tareas de apoyo: regalos, ayudas, presencia.',
     stl_responsable: 'yo',
@@ -120,6 +130,7 @@ export const INICIATIVAS_SUGERIDAS: Omit<IniciativaInput, 'estado_rag'>[] = [
     categoria: 'libre',
   },
   {
+    area: 'Esposo',
     nombre: 'Esposo',
     descripcion: 'Tiempo de calidad, ocio y cuidado: trámites y citas médicas.',
     stl_responsable: 'yo',
@@ -127,6 +138,7 @@ export const INICIATIVAS_SUGERIDAS: Omit<IniciativaInput, 'estado_rag'>[] = [
     categoria: 'libre',
   },
   {
+    area: 'Universidad',
     nombre: 'Universidad',
     descripcion: 'Pendientes del semestre: entregas de las materias matriculadas y papelería.',
     stl_responsable: 'yo',
@@ -134,6 +146,7 @@ export const INICIATIVAS_SUGERIDAS: Omit<IniciativaInput, 'estado_rag'>[] = [
     categoria: 'trabajo',
   },
   {
+    area: 'Colegio',
     nombre: 'Colegio',
     descripcion: 'Trabajo diario (lun-vie) y papelería de gestión: planillas, observadores, etc.',
     stl_responsable: 'yo',
@@ -144,6 +157,7 @@ export const INICIATIVAS_SUGERIDAS: Omit<IniciativaInput, 'estado_rag'>[] = [
   // de autocuidado consigue su segmento (ejercicio ≠ comida ≠ traslado…).
   // Sin ellas, la vista `uso_del_tiempo` los devuelve sin clasificar.
   {
+    area: 'Personal',
     nombre: 'Ejercicio',
     descripcion: 'Gimnasio, caminata, deporte, estiramiento.',
     stl_responsable: 'yo',
@@ -151,6 +165,7 @@ export const INICIATIVAS_SUGERIDAS: Omit<IniciativaInput, 'estado_rag'>[] = [
     categoria: 'ejercicio',
   },
   {
+    area: 'Personal',
     nombre: 'Comida',
     descripcion: 'Comer, cocinar, mercado, sobremesa.',
     stl_responsable: 'yo',
@@ -158,6 +173,7 @@ export const INICIATIVAS_SUGERIDAS: Omit<IniciativaInput, 'estado_rag'>[] = [
     categoria: 'comida',
   },
   {
+    area: 'Personal',
     nombre: 'Traslado',
     descripcion: 'Tiempo en movimiento entre dos lugares.',
     stl_responsable: 'yo',
@@ -165,6 +181,7 @@ export const INICIATIVAS_SUGERIDAS: Omit<IniciativaInput, 'estado_rag'>[] = [
     categoria: 'traslado',
   },
   {
+    area: 'Personal',
     nombre: 'Cuidado personal',
     descripcion: 'Aseo, salud, casa, trámites del cuerpo.',
     stl_responsable: 'yo',
@@ -172,6 +189,7 @@ export const INICIATIVAS_SUGERIDAS: Omit<IniciativaInput, 'estado_rag'>[] = [
     categoria: 'cuidado_personal',
   },
   {
+    area: 'Personal',
     nombre: 'Tiempo libre',
     descripcion: 'Ocio sin entregable: leer por gusto, gente querida, no hacer nada.',
     stl_responsable: 'yo',
@@ -182,14 +200,19 @@ export const INICIATIVAS_SUGERIDAS: Omit<IniciativaInput, 'estado_rag'>[] = [
 
 /** Inserta las iniciativas sugeridas que falten (por nombre). Devuelve cuántas creó. */
 export async function seedIniciativasSugeridas(): Promise<number> {
-  const existentes = await listIniciativasTodas()
+  const [existentes, areas] = await Promise.all([listIniciativasTodas(), listAreas()])
   const nombres = new Set(existentes.map((i) => i.nombre.trim().toLowerCase()))
   const faltan = INICIATIVAS_SUGERIDAS.filter((i) => !nombres.has(i.nombre.toLowerCase()))
   if (faltan.length === 0) return 0
+  const porNombre = new Map(areas.map((a) => [a.nombre.trim().toLowerCase(), a.id]))
   const base = existentes.length
   const rows = await Promise.all(
-    faltan.map(async (i, idx) => ({
-      ...(await prepararIniciativa({ ...i, estado_rag: 'ambar' })),
+    faltan.map(async ({ area, ...i }, idx) => ({
+      ...(await prepararIniciativa({
+        ...i,
+        estado_rag: 'ambar',
+        area_id: (area && porNombre.get(area.toLowerCase())) ?? null,
+      })),
       orden_prioridad: base + idx,
     })),
   )

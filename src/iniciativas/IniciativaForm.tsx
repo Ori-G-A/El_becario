@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Check, X, Users, User } from 'lucide-react'
-import type { CategoriaIniciativa, EstadoRag, Iniciativa } from '../types/database'
+import type { Area, CategoriaIniciativa, EstadoRag, Iniciativa } from '../types/database'
 import type { IniciativaInput } from '../data/iniciativas'
 import { RagSelector } from '../components/RagSelector'
 import { inputStyle } from '../components/styles'
@@ -8,11 +8,13 @@ import { CATEGORIA_INICIATIVA, CATEGORIAS_INICIATIVA } from '../lib/categorias'
 
 export function IniciativaForm({
   initial,
+  areas,
   busy,
   onSave,
   onCancel,
 }: {
   initial: Iniciativa | null
+  areas: Area[]
   busy: boolean
   onSave: (input: IniciativaInput) => void
   onCancel: () => void
@@ -23,6 +25,7 @@ export function IniciativaForm({
   const [esEquipo, setEsEquipo] = useState(initial?.es_equipo ?? false)
   const [rag, setRag] = useState<EstadoRag>(initial?.estado_rag ?? 'ambar')
   const [categoria, setCategoria] = useState<CategoriaIniciativa | ''>(initial?.categoria ?? '')
+  const [areaId, setAreaId] = useState(initial?.area_id ?? '')
   const [error, setError] = useState<string | null>(null)
 
   function submit(e: FormEvent) {
@@ -36,6 +39,10 @@ export function IniciativaForm({
       setError('Elige una categoría: es la etiqueta que lee amiga y no debería cambiar después.')
       return
     }
+    if (!areaId) {
+      setError('Elige un área: es lo que hace que amiga sepa de qué parte de tu vida es este tiempo.')
+      return
+    }
     onSave({
       nombre: limpio,
       descripcion: descripcion.trim() || null,
@@ -43,6 +50,7 @@ export function IniciativaForm({
       es_equipo: esEquipo,
       estado_rag: rag,
       categoria,
+      area_id: areaId,
     })
   }
 
@@ -76,6 +84,27 @@ export function IniciativaForm({
         rows={2}
         style={{ ...inputStyle, marginBottom: '0.9rem', resize: 'vertical', fontFamily: 'var(--font-body)' }}
       />
+
+      <label className="mono-tag" htmlFor="ini-area" style={{ display: 'block', marginBottom: '0.35rem' }}>
+        Área de vida
+      </label>
+      <select
+        id="ini-area"
+        value={areaId}
+        onChange={(e) => setAreaId(e.target.value)}
+        style={{ ...inputStyle, marginBottom: '0.35rem' }}
+      >
+        <option value="">Elegir…</option>
+        {areas.map((a) => (
+          <option key={a.id} value={a.id}>
+            {a.nombre}
+          </option>
+        ))}
+      </select>
+      <p style={{ opacity: 0.75, fontSize: '0.85rem', margin: '0 0 0.9rem' }}>
+        Baja sola a las tareas y bloques de esta iniciativa. Una tarea puede llevar
+        otra área si hace falta, pero esta es la de casa.
+      </p>
 
       <label className="mono-tag" htmlFor="ini-categoria" style={{ display: 'block', marginBottom: '0.35rem' }}>
         Categoría (fija)

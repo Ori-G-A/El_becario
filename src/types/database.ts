@@ -55,6 +55,8 @@ export type Iniciativa = {
   estado_rag: EstadoRag
   /** null = sin clasificar (iniciativas creadas antes de la migración 14). */
   categoria: CategoriaIniciativa | null
+  /** Área de vida de la que cuelga (migración 16). Baja a sus tareas y bloques. */
+  area_id: string | null
   orden_prioridad: number
   activa: boolean
   creada_en: string
