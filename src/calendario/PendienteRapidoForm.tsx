@@ -37,12 +37,7 @@ export function PendienteRapidoForm({
 
   if (!abierto) {
     return (
-      <button
-        type="button"
-        className="btn"
-        onClick={() => setAbierto(true)}
-        style={{ marginBottom: '0.6rem' }}
-      >
+      <button type="button" className="btn btn--sec" onClick={() => setAbierto(true)}>
         <Plus size={16} aria-hidden />
         Pendiente rápido
       </button>
@@ -53,7 +48,14 @@ export function PendienteRapidoForm({
     <form
       onSubmit={submit}
       className="card"
-      style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', padding: '0.6rem', marginBottom: '0.6rem' }}
+      style={{
+        display: 'flex',
+        gap: '0.4rem',
+        flexWrap: 'wrap',
+        padding: '0.6rem',
+        // Abierto ocupa su propia línea dentro de la fila de acciones.
+        flexBasis: '100%',
+      }}
     >
       <input
         value={titulo}
@@ -89,11 +91,10 @@ export function PendienteRapidoForm({
       </button>
       <button
         type="button"
-        className="btn"
+        className="btn btn--sec"
         onClick={cerrar}
         disabled={busy}
-        style={{ background: 'var(--papel)', color: 'var(--tinta)' }}
-      >
+        >
         <X size={16} aria-hidden />
       </button>
     </form>

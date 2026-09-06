@@ -336,76 +336,79 @@ export function CalendarioModule() {
 
   return (
     <section>
-      {/* Toggle Día / Semana */}
-      <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.9rem' }}>
-        {(['dia', 'semana'] as Modo[]).map((m) => {
-          const activo = modo === m
-          const Icon = m === 'dia' ? CalendarDays : CalendarRange
-          return (
-            <button
-              key={m}
-              type="button"
-              onClick={() => setModo(m)}
-              aria-pressed={activo}
-              className="btn"
-              style={{
-                background: activo ? 'var(--tinta)' : 'var(--papel)',
-                color: activo ? 'var(--papel)' : 'var(--tinta)',
-                boxShadow: activo ? 'var(--sombra-dura-sm)' : 'none',
-              }}
-            >
-              <Icon size={16} aria-hidden />
-              {m === 'dia' ? 'Día' : 'Semana'}
-            </button>
-          )
-        })}
-      </div>
-
-      {/* Navegación */}
+      {/* Conmutador Día / Semana y navegación, en la misma fila */}
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: '0.5rem',
+          gap: '0.6rem',
+          marginBottom: '0.9rem',
+        }}
+      >
+        <div className="pills">
+          {(['dia', 'semana'] as Modo[]).map((m) => {
+            const Icon = m === 'dia' ? CalendarDays : CalendarRange
+            return (
+              <button key={m} type="button" onClick={() => setModo(m)} aria-pressed={modo === m}>
+                <Icon size={14} aria-hidden />
+                {m === 'dia' ? 'Día' : 'Semana'}
+              </button>
+            )
+          })}
+        </div>
+
+        <div style={{ display: 'inline-flex', gap: '0.35rem' }}>
+          <button
+            type="button"
+            className="btn btn--icono"
+            onClick={() => navegar(modo === 'dia' ? -1 : -7)}
+            aria-label={modo === 'dia' ? 'Día anterior' : 'Semana anterior'}
+          >
+            <ChevronLeft size={18} aria-hidden />
+          </button>
+          <button
+            type="button"
+            className="btn btn--icono"
+            onClick={() => navegar(modo === 'dia' ? 1 : 7)}
+            aria-label={modo === 'dia' ? 'Día siguiente' : 'Semana siguiente'}
+          >
+            <ChevronRight size={18} aria-hidden />
+          </button>
+        </div>
+      </div>
+
+      {/* Título del período */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'baseline',
+          justifyContent: 'space-between',
+          gap: '0.6rem',
+          flexWrap: 'wrap',
           marginBottom: '1rem',
         }}
       >
-        <button
-          type="button"
-          className="btn"
-          onClick={() => navegar(modo === 'dia' ? -1 : -7)}
-          aria-label={modo === 'dia' ? 'Día anterior' : 'Semana anterior'}
-          style={{ padding: '0.45rem 0.55rem', background: 'var(--papel)', color: 'var(--tinta)' }}
-        >
-          <ChevronLeft size={18} aria-hidden />
-        </button>
-
-        <div style={{ textAlign: 'center', flex: 1, minWidth: 0 }}>
-          <h1 style={{ fontSize: 'clamp(1.15rem, 4.5vw, 1.6rem)', textTransform: 'capitalize' }}>
-            {titulo}
-          </h1>
-          {!(modo === 'dia' && esHoy) && (
-            <button
-              type="button"
-              onClick={volverAHoy}
-              className="mono-tag"
-              style={{ background: 'none', border: 'none', color: 'var(--sello)', cursor: 'pointer', fontWeight: 600 }}
-            >
-              {modo === 'dia' ? 'Volver a hoy' : 'Semana actual'}
-            </button>
-          )}
-        </div>
-
-        <button
-          type="button"
-          className="btn"
-          onClick={() => navegar(modo === 'dia' ? 1 : 7)}
-          aria-label={modo === 'dia' ? 'Día siguiente' : 'Semana siguiente'}
-          style={{ padding: '0.45rem 0.55rem', background: 'var(--papel)', color: 'var(--tinta)' }}
-        >
-          <ChevronRight size={18} aria-hidden />
-        </button>
+        <h1 className="mayus-inicial" style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)' }}>
+          {titulo}
+        </h1>
+        {!(modo === 'dia' && esHoy) && (
+          <button
+            type="button"
+            onClick={volverAHoy}
+            className="mono-tag"
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              color: 'var(--sello)',
+              cursor: 'pointer',
+              fontWeight: 600,
+            }}
+          >
+            {modo === 'dia' ? 'Volver a hoy' : 'Semana actual'}
+          </button>
+        )}
       </div>
 
       <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
@@ -422,13 +425,15 @@ export function CalendarioModule() {
             Nuevo bloque
           </button>
         )}
+        {modo === 'dia' && esHoy && !loading && (
+          <PendienteRapidoForm iniciativas={iniciativas} busy={busy} onCrear={crearPendiente} />
+        )}
         {modo === 'dia' && topGoalTarea && !topGoalAgendado && !form.open && (
           <button
             type="button"
-            className="btn"
+            className="btn btn--sec"
             onClick={() => agendarTopGoal(topGoalTarea)}
             disabled={busy}
-            style={{ background: 'var(--papel)', color: 'var(--tinta)' }}
           >
             <Target size={16} aria-hidden />
             Agendar Top Goal (2 h protegidas)
@@ -472,30 +477,29 @@ export function CalendarioModule() {
                   <button
                     key={label}
                     type="button"
-                    className="btn"
+                    className="btn btn--sec"
                     onClick={() => form.editing && moverBloque(form.editing, delta)}
                     disabled={busy}
-                    style={{ background: 'var(--papel)', color: 'var(--tinta)' }}
                   >
                     {label}
                   </button>
                 ))}
                 <button
                   type="button"
-                  className="btn"
+                  className="btn btn--sec"
                   onClick={() => form.editing && toggleNoCumplido(form.editing)}
                   disabled={busy}
-                  style={{ background: 'var(--papel)', color: form.editing.no_cumplido ? 'var(--tinta)' : 'var(--rag-ambar)' }}
+                  style={{ color: form.editing.no_cumplido ? 'var(--tinta)' : 'var(--rag-ambar)' }}
                 >
                   {form.editing.no_cumplido ? <Undo2 size={15} aria-hidden /> : <Ban size={15} aria-hidden />}
                   {form.editing.no_cumplido ? 'Sí lo cumplí' : 'No lo cumplí'}
                 </button>
                 <button
                   type="button"
-                  className="btn"
+                  className="btn btn--sec"
                   onClick={() => form.editing && handleDelete(form.editing)}
                   disabled={busy}
-                  style={{ background: 'var(--papel)', color: 'var(--rag-rojo)' }}
+                  style={{ color: 'var(--rag-rojo)' }}
                 >
                   <Trash2 size={15} aria-hidden />
                   Borrar bloque
@@ -503,10 +507,10 @@ export function CalendarioModule() {
                 {form.editing.serie_id && (
                   <button
                     type="button"
-                    className="btn"
+                    className="btn btn--sec"
                     onClick={() => form.editing && handleDeleteSerie(form.editing)}
                     disabled={busy}
-                    style={{ background: 'var(--papel)', color: 'var(--rag-rojo)' }}
+                    style={{ color: 'var(--rag-rojo)' }}
                   >
                     <Trash2 size={15} aria-hidden />
                     Borrar serie
@@ -522,9 +526,6 @@ export function CalendarioModule() {
         <p className="mono-tag">Armando tu {modo === 'dia' ? 'día' : 'semana'}…</p>
       ) : modo === 'dia' ? (
         <>
-          {esHoy && (
-            <PendienteRapidoForm iniciativas={iniciativas} busy={busy} onCrear={crearPendiente} />
-          )}
           <ChecklistDia
             tareas={pendientes}
             busy={busy}

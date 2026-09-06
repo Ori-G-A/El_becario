@@ -1,31 +1,50 @@
 /* ============================================================
    El Becario — Sistema de diseño
-   Neo-brutalismo con tema de escritorio de oficina.
+   Papel de oficina, tinta suave y un sello verde. Claro y oscuro.
    ============================================================ */
 
 :root {
-  /* --- Tokens de color (disciplinados: 4-6) --- */
-  --papel: #efede4; /* fondo: papel de oficina frío */
-  --tinta: #181818; /* texto, bordes, sombras duras */
-  --rag-rojo: #fb4d3d; /* SOLO estado RAG */
-  --rag-ambar: #ffc53d; /* SOLO estado RAG */
-  --rag-verde: #2ecc71; /* SOLO estado RAG */
-  --sello: #2d4dff; /* ÚNICO color de acción: botones, links, CTAs */
+  /* --- Superficies --- */
+  --papel: #f7f5f0; /* fondo de la app */
+  --hueco: #ebe8e1; /* botón terciario, chip */
+  --hueco2: #e0dcd3;
+  --sup: #fffdf9; /* tarjeta elevada */
+  --suave: #f3f1ea; /* fila dentro de una tarjeta */
 
-  /* Derivados utilitarios */
-  --papel-hueco: #e4e1d4; /* fondo levemente hundido */
-  --sello-tinta: #ffffff; /* texto sobre --sello (pasa WCAG AA) */
+  /* --- Tinta y líneas --- */
+  --tinta: #26262a;
+  --borde: #e2ded5; /* COLOR, no shorthand: border: 1px solid var(--borde) */
+  --borde2: #d8d4cb; /* borde de botón secundario */
+  --linea: #efece5; /* separadores y rejilla del timeline */
 
-  /* --- Geometría neo-brutalista --- */
-  --borde: 2.5px solid var(--tinta);
-  --sombra-dura: 4px 4px 0 var(--tinta); /* offset 4px, sin blur */
-  --sombra-dura-sm: 2px 2px 0 var(--tinta);
-  --radio: 4px; /* mínimo y consistente */
+  /* --- Acción --- */
+  --sello: #0f766e;
+  --sello-ink: #f7f5f0;
+  --sombra: 0 2px 8px rgba(38, 38, 42, 0.06);
+
+  /* --- Estado RAG (solo estado) --- */
+  --rojo: #fb4d3d;
+  --ambar: #ffc53d;
+  --verde: #2ecc71;
+
+  /* --- Etiquetas de ámbito: áreas y tipos de bloque --- */
+  --violeta: #8a63d2;
+  --rosa: #e8639b;
+  --teal: #2aa9b5;
+  --manila: #c77d3a;
+  --pizarra: #6b8e9e;
+  --vino: #b5495b;
+  --oliva: #5c8a4a;
+  --mostaza: #d98c2b;
+  --sueno: #46506b;
+
+  /* --- Geometría --- */
+  --radio: 12px;
+  --radio-btn: 10px;
 
   /* --- Tipografías --- */
-  --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
-  --font-body: 'IBM Plex Sans', system-ui, sans-serif;
-  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --font-body: 'Schibsted Grotesk', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
   color-scheme: light;
   font-family: var(--font-body);
@@ -36,6 +55,46 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+[data-tema='oscuro'] {
+  --papel: #191c1b;
+  --hueco: #262b29;
+  --hueco2: #2c322f;
+  --sup: #202422;
+  --suave: #262b29;
+  --tinta: #eceae4;
+  --borde: #2e3432;
+  --borde2: #3a403d;
+  --linea: #232826;
+  --sello: #2dd4bf;
+  --sello-ink: #06201d;
+  --sombra: 0 2px 10px rgba(0, 0, 0, 0.35);
+
+  --violeta: #b79cf0;
+  --rosa: #f08cb4;
+  --teal: #5fd0da;
+  --manila: #e3a468;
+  --pizarra: #9db8c7;
+  --vino: #e08596;
+  --oliva: #8fc47a;
+  --mostaza: #eeb35c;
+  --sueno: #8b96b8;
+
+  color-scheme: dark;
+}
+
+/* Alias heredados: el resto de la app los usa por nombre viejo. */
+:root,
+[data-tema='oscuro'] {
+  --font-display: var(--font-body);
+  --papel-hueco: var(--hueco);
+  --sello-tinta: var(--sello-ink);
+  --sombra-dura: var(--sombra);
+  --sombra-dura-sm: var(--sombra);
+  --rag-rojo: var(--rojo);
+  --rag-ambar: var(--ambar);
+  --rag-verde: var(--verde);
 }
 
 *,
@@ -53,11 +112,10 @@ body {
 
 body {
   background-color: var(--papel);
-  /* Trama sutil de cuaderno cuadriculado de oficina */
-  background-image:
-    linear-gradient(var(--papel-hueco) 1px, transparent 1px),
-    linear-gradient(90deg, var(--papel-hueco) 1px, transparent 1px);
-  background-size: 28px 28px;
+  color: var(--tinta);
+  transition:
+    background-color 160ms linear,
+    color 160ms linear;
 }
 
 #root {
@@ -67,10 +125,10 @@ body {
 h1,
 h2,
 h3 {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.05;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
   margin: 0;
 }
 
@@ -84,90 +142,138 @@ a {
   text-underline-offset: 3px;
 }
 
-button {
+button,
+input,
+textarea,
+select {
   font-family: var(--font-body);
 }
 
 /* --- Etiqueta mono: el aire de "documento mecanografiado" --- */
 .mono-tag {
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.09em;
 }
 
-/* --- Tarjeta tablero de corcho --- */
+/* --- Tarjeta --- */
 .card {
-  background: var(--papel);
-  border: var(--borde);
+  background: var(--sup);
+  border: 1px solid var(--borde);
   border-radius: var(--radio);
-  box-shadow: var(--sombra-dura);
+  box-shadow: var(--sombra);
 }
 
-/* --- Botón de acción (único color: --sello) --- */
+/* --- Botón de acción --- */
 .btn {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   font-weight: 600;
-  font-size: 0.95rem;
-  padding: 0.6rem 1.1rem;
-  color: var(--sello-tinta);
+  font-size: 0.88rem;
+  padding: 0.55rem 1rem;
+  color: var(--sello-ink);
   background: var(--sello);
-  border: var(--borde);
-  border-radius: var(--radio);
-  box-shadow: var(--sombra-dura-sm);
+  border: none;
+  border-radius: var(--radio-btn);
   cursor: pointer;
-  transition:
-    transform 0.05s ease,
-    box-shadow 0.05s ease;
+  transition: filter 120ms ease;
 }
-.btn:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: var(--sombra-dura);
+.btn:hover:not(:disabled) {
+  filter: brightness(1.08);
 }
-.btn:active {
-  transform: translate(2px, 2px);
-  box-shadow: none;
+.btn:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 .btn:focus-visible {
-  outline: 3px solid var(--tinta);
+  outline: 2px solid var(--sello);
   outline-offset: 2px;
 }
 
-/* --- Sello de goma (signature element) --- */
-.sello-goma {
-  display: inline-block;
-  font-family: var(--font-display);
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--sello);
-  border: 3px solid var(--sello);
-  border-radius: 6px;
-  padding: 0.15em 0.5em;
-  transform: rotate(-8deg);
-  opacity: 0.85;
+/* Secundario: mismo peso, sin gritar. */
+.btn--sec {
+  color: var(--tinta);
+  background: var(--papel);
+  border: 1px solid var(--borde2);
 }
 
-/* --- Marcadores RAG (semáforo = marcador fluorescente) --- */
+/* Icono suelto (cabecera, filas): cuadrado hundido. */
+.btn--icono {
+  padding: 0.42rem 0.5rem;
+  color: var(--tinta);
+  background: var(--hueco);
+  border: none;
+  border-radius: 9px;
+}
+
+/* --- Píldora de conmutador (Día/Semana, Matriz/Top 12, sub-paneles) --- */
+.pills {
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 0.2rem;
+  background: var(--hueco);
+  border-radius: 999px;
+}
+.pills > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.42rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--tinta);
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  opacity: 0.65;
+}
+.pills > button[aria-pressed='true'],
+.pills > button[aria-current='true'] {
+  background: var(--papel);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  opacity: 1;
+}
+
+/* --- Marcadores RAG (semáforo) --- */
 .rag {
   font-family: var(--font-mono);
   font-weight: 600;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  padding: 0.1em 0.45em;
-  border: 2px solid var(--tinta);
-  border-radius: 3px;
-  color: var(--tinta);
+  padding: 0.12em 0.5em;
+  border: none;
+  border-radius: 6px;
+  /* Los tres tonos RAG son claros en ambos temas: tinta fija. */
+  color: #26262a;
 }
 .rag--rojo {
-  background: var(--rag-rojo);
+  background: var(--rojo);
 }
 .rag--ambar {
-  background: var(--rag-ambar);
+  background: var(--ambar);
 }
 .rag--verde {
-  background: var(--rag-verde);
+  background: var(--verde);
+}
+
+/* --- Chip mono: iniciativa, categoría, estado --- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 6px;
+  background: var(--hueco);
+  white-space: nowrap;
+}
+
+/* "domingo, 6 de septiembre" → "Domingo, 6 de septiembre" (capitalize sube cada palabra) */
+.mayus-inicial::first-letter {
+  text-transform: uppercase;
 }

@@ -11,8 +11,11 @@ import {
   Download,
   Upload,
   X,
+  Sun,
+  Moon,
 } from 'lucide-react'
 import { useAuth } from '../auth/useAuth'
+import { temaActual, ponerTema, type Tema } from '../lib/tema'
 import { useLock } from '../lock/useLock'
 import { exportarBackup, restaurarBackupDesdeTexto } from '../data/backup'
 import { AlertasBanner } from './AlertasBanner'
@@ -51,6 +54,7 @@ export function AppShell({
   const [exportando, setExportando] = useState(false)
   const [restaurando, setRestaurando] = useState(false)
   const [saliendo, setSaliendo] = useState(false)
+  const [tema, setTema] = useState<Tema>(temaActual)
   const restoreInputRef = useRef<HTMLInputElement | null>(null)
 
   // Easter eggs
@@ -59,6 +63,13 @@ export function AppShell({
   const [cafes, setCafes] = useState(0)
   const [horaRara, setHoraRara] = useState(false)
   const logoLongPress = useLongPress(() => setCvAbierto(true))
+
+  function alternarTema() {
+    const siguiente: Tema = tema === 'oscuro' ? 'claro' : 'oscuro'
+    ponerTema(siguiente)
+    setTema(siguiente)
+  }
+
   useKonami(() => setRenuncia(true))
 
   useEffect(() => {
@@ -128,7 +139,7 @@ export function AppShell({
           justifyContent: 'space-between',
           gap: '1rem',
           padding: '0.75rem 1rem',
-          borderBottom: 'var(--borde)',
+          borderBottom: '1px solid var(--borde)',
           background: 'var(--papel)',
           position: 'sticky',
           top: 0,
@@ -142,14 +153,12 @@ export function AppShell({
             style={{
               display: 'grid',
               placeItems: 'center',
-              width: 34,
-              height: 34,
-              border: '2.5px solid var(--sello)',
-              borderRadius: 6,
-              transform: 'rotate(-8deg)',
-              fontFamily: 'var(--font-display)',
-              fontWeight: 800,
-              color: 'var(--sello)',
+              width: 30,
+              height: 30,
+              borderRadius: 9,
+              background: 'var(--sello)',
+              fontWeight: 700,
+              color: 'var(--sello-ink)',
               cursor: 'pointer',
               userSelect: 'none',
               touchAction: 'none',
@@ -157,30 +166,37 @@ export function AppShell({
           >
             B
           </span>
-          <strong style={{ fontFamily: 'var(--font-display)', fontSize: '1.15rem' }}>
-            El Becario
-          </strong>
+          <strong style={{ fontSize: '1.08rem', letterSpacing: '-0.015em' }}>El Becario</strong>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.4rem' }}>
+          <button
+            type="button"
+            className="btn btn--icono"
+            onClick={alternarTema}
+            title="Claro / oscuro"
+            aria-label="Cambiar tema"
+            style={{ fontSize: '0.78rem', fontWeight: 600 }}
+          >
+            {tema === 'oscuro' ? <Sun size={15} aria-hidden /> : <Moon size={15} aria-hidden />}
+            {tema === 'oscuro' ? 'Claro' : 'Oscuro'}
+          </button>
           <NotificacionesToggle />
           <button
             type="button"
-            className="btn"
+            className="btn btn--icono"
             onClick={respaldar}
             disabled={exportando}
             title="Descargar respaldo (JSON)"
-            style={{ padding: '0.4rem 0.55rem' }}
           >
             <Download size={16} aria-hidden />
           </button>
           <button
             type="button"
-            className="btn"
+            className="btn btn--icono"
             onClick={() => restoreInputRef.current?.click()}
             disabled={restaurando}
             title="Restaurar respaldo (JSON)"
-            style={{ padding: '0.4rem 0.55rem' }}
           >
             <Upload size={16} aria-hidden />
           </button>
@@ -193,10 +209,9 @@ export function AppShell({
           />
           <button
             type="button"
-            className="btn"
+            className="btn btn--icono"
             onClick={lock}
             title="Bloquear"
-            style={{ padding: '0.4rem 0.55rem' }}
           >
             <Lock size={16} aria-hidden />
           </button>
@@ -206,7 +221,7 @@ export function AppShell({
             onClick={cerrarSesion}
             disabled={saliendo}
             title="Cerrar sesión"
-            style={{ padding: '0.4rem 0.55rem' }}
+            style={{ padding: '0.42rem 0.5rem', borderRadius: 9 }}
           >
             <LogOut size={16} aria-hidden />
           </button>
@@ -217,9 +232,9 @@ export function AppShell({
         style={{
           display: 'flex',
           flexWrap: 'wrap',
-          gap: '0.5rem',
-          padding: '0.6rem 1rem',
-          maxWidth: 760,
+          gap: '0.4rem',
+          padding: '0.7rem 1rem 0.2rem',
+          maxWidth: 820,
           margin: '0 auto',
         }}
       >
@@ -236,24 +251,33 @@ export function AppShell({
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '0.4rem',
-                padding: '0.45rem 0.9rem',
+                padding: '0.42rem 0.85rem',
+                fontSize: '0.85rem',
                 fontWeight: 600,
-                border: 'var(--borde)',
-                borderRadius: 'var(--radio)',
-                background: active ? 'var(--tinta)' : 'var(--papel)',
+                border: 'none',
+                borderRadius: 999,
+                background: active ? 'var(--tinta)' : 'var(--hueco)',
                 color: active ? 'var(--papel)' : 'var(--tinta)',
-                boxShadow: active ? 'var(--sombra-dura-sm)' : 'none',
                 cursor: 'pointer',
               }}
             >
-              <Icon size={16} aria-hidden />
+              <Icon size={14} aria-hidden />
               {tab.label}
             </button>
           )
         })}
       </nav>
 
-      <main style={{ maxWidth: 760, margin: '0 auto', padding: '0.5rem 1rem 4rem' }}>
+      <main
+        style={{
+          maxWidth: 820,
+          margin: '0 auto',
+          padding: '0.6rem 1rem 4rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.9rem',
+        }}
+      >
         {horaRara && (
           <div
             className="card"
@@ -262,7 +286,6 @@ export function AppShell({
               alignItems: 'center',
               gap: '0.6rem',
               padding: '0.7rem 0.9rem',
-              marginBottom: '0.6rem',
             }}
           >
             <span style={{ flex: 1 }}>

@@ -98,7 +98,7 @@ export function AreasModule() {
           marginBottom: '1rem',
         }}
       >
-        <h1 style={{ fontSize: 'clamp(1.8rem, 6vw, 2.6rem)' }}>
+        <h1 style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)' }}>
           Áreas{' '}
           <span className="mono-tag" style={{ opacity: 0.6 }}>
             {areas.length}
@@ -152,9 +152,8 @@ export function AreasModule() {
             </button>
             <button
               type="button"
-              className="btn"
+              className="btn btn--sec"
               onClick={() => setForm({ open: true, editing: null })}
-              style={{ background: 'var(--papel)', color: 'var(--tinta)' }}
             >
               <Plus size={16} aria-hidden />
               Crear una
@@ -177,7 +176,7 @@ export function AreasModule() {
                   width: 38,
                   height: 38,
                   background: area.color,
-                  border: 'var(--borde)',
+                  border: '1px solid var(--borde)',
                   borderRadius: 'var(--radio)',
                   flexShrink: 0,
                 }}
@@ -190,8 +189,8 @@ export function AreasModule() {
                 onClick={() => setForm({ open: true, editing: area })}
                 title="Editar"
                 aria-label={`Editar ${area.nombre}`}
-                className="btn"
-                style={{ padding: '0.35rem 0.5rem', background: 'var(--papel)', color: 'var(--tinta)' }}
+                className="btn btn--icono"
+                style={{ padding: '0.35rem 0.5rem' }}
               >
                 <Pencil size={15} aria-hidden />
               </button>
@@ -201,8 +200,8 @@ export function AreasModule() {
                 title="Borrar"
                 aria-label={`Borrar ${area.nombre}`}
                 disabled={busy}
-                className="btn"
-                style={{ padding: '0.35rem 0.5rem', background: 'var(--papel)', color: 'var(--tinta)' }}
+                className="btn btn--icono"
+                style={{ padding: '0.35rem 0.5rem' }}
               >
                 <Trash2 size={15} aria-hidden />
               </button>

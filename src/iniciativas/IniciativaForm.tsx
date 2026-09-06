@@ -146,8 +146,7 @@ export function IniciativaForm({
           <button
             type="button"
             onClick={() => setEsEquipo((v) => !v)}
-            className="btn"
-            style={{ background: 'var(--papel)', color: 'var(--tinta)' }}
+            className="btn btn--sec"
           >
             {esEquipo ? <Users size={16} aria-hidden /> : <User size={16} aria-hidden />}
             {esEquipo ? 'De equipo' : 'Personal'}
@@ -172,9 +171,8 @@ export function IniciativaForm({
           type="button"
           onClick={onCancel}
           disabled={busy}
-          className="btn"
-          style={{ background: 'var(--papel)', color: 'var(--tinta)' }}
-        >
+          className="btn btn--sec"
+          >
           <X size={16} aria-hidden />
           Cancelar
         </button>

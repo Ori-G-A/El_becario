@@ -271,7 +271,7 @@ export function Top12Module() {
           flexWrap: 'wrap',
         }}
       >
-        <h1 style={{ fontSize: 'clamp(1.8rem, 6vw, 2.6rem)' }}>
+        <h1 style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)' }}>
           Tareas{' '}
           <span className="mono-tag" style={{ opacity: 0.6 }}>
             {top12.length}/{TOP12_MAX} en foco · {pendientes} pendientes
@@ -290,31 +290,17 @@ export function Top12Module() {
       </div>
 
       {/* Conmutador de vista */}
-      <nav style={{ display: 'flex', gap: '0.4rem', marginBottom: '1rem' }}>
+      <nav className="pills" style={{ alignSelf: 'flex-start', marginBottom: '1rem' }}>
         {VISTAS.map((v) => {
-          const activo = vista === v.id
           const Icon = v.icon
           return (
             <button
               key={v.id}
               type="button"
               onClick={() => setVista(v.id)}
-              aria-pressed={activo}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                padding: '0.4rem 0.85rem',
-                fontWeight: 600,
-                border: 'var(--borde)',
-                borderRadius: 'var(--radio)',
-                background: activo ? 'var(--tinta)' : 'var(--papel)',
-                color: activo ? 'var(--papel)' : 'var(--tinta)',
-                boxShadow: activo ? 'var(--sombra-dura-sm)' : 'none',
-                cursor: 'pointer',
-              }}
+              aria-pressed={vista === v.id}
             >
-              <Icon size={15} aria-hidden />
+              <Icon size={14} aria-hidden />
               {v.label}
             </button>
           )
@@ -325,10 +311,10 @@ export function Top12Module() {
       <div
         className="card"
         style={{
-          padding: '1rem',
+          padding: '0.9rem 1rem',
           marginBottom: '1.25rem',
-          borderColor: 'var(--sello)',
-          background: topGoal ? 'var(--papel)' : 'var(--papel-hueco)',
+          borderLeft: '4px solid var(--sello)',
+          background: topGoal ? 'var(--sup)' : 'var(--hueco)',
         }}
       >
         <p className="mono-tag" style={{ color: 'var(--sello)', marginBottom: '0.3rem' }}>

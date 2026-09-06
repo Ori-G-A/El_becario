@@ -34,16 +34,14 @@ export function NotificacionesToggle() {
   return (
     <button
       type="button"
-      className="btn"
+      className="btn btn--icono"
       onClick={toggle}
       disabled={busy}
       title={activo ? 'Notificaciones activadas' : 'Activar notificaciones'}
       aria-pressed={activo}
-      style={{
-        padding: '0.4rem 0.55rem',
-        background: activo ? 'var(--sello)' : 'var(--papel)',
-        color: activo ? '#fff' : 'var(--tinta)',
-      }}
+      style={
+        activo ? { background: 'var(--sello)', color: 'var(--sello-ink)' } : undefined
+      }
     >
       {activo ? <Bell size={16} aria-hidden /> : <BellOff size={16} aria-hidden />}
     </button>

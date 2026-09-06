@@ -28,17 +28,15 @@ export function AuthShell({
         <div
           aria-hidden
           style={{
-            width: 56,
-            height: 56,
+            width: 52,
+            height: 52,
             display: 'grid',
             placeItems: 'center',
-            border: '3px solid var(--sello)',
-            borderRadius: 8,
-            transform: 'rotate(-8deg)',
-            fontFamily: 'var(--font-display)',
-            fontWeight: 800,
-            fontSize: '2rem',
-            color: 'var(--sello)',
+            background: 'var(--sello)',
+            borderRadius: 14,
+            fontWeight: 700,
+            fontSize: '1.9rem',
+            color: 'var(--sello-ink)',
             marginBottom: '1rem',
           }}
         >
@@ -48,7 +46,7 @@ export function AuthShell({
         <p className="mono-tag" style={{ color: 'var(--sello)' }}>
           {badge}
         </p>
-        <h1 style={{ fontSize: 'clamp(1.8rem, 6vw, 2.4rem)', margin: '0.3rem 0 0.5rem' }}>
+        <h1 style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)', margin: '0.3rem 0 0.5rem' }}>
           {title}
         </h1>
         <p style={{ marginBottom: '1.25rem', maxWidth: '34ch' }}>{subtitle}</p>

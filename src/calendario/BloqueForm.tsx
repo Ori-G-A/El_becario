@@ -184,11 +184,10 @@ export function BloqueForm({
                   aria-pressed={on}
                   style={{
                     padding: '0.3rem 0.6rem',
-                    border: 'var(--borde)',
-                    borderRadius: 'var(--radio)',
-                    background: on ? 'var(--sello)' : 'var(--papel)',
-                    color: on ? '#fff' : 'var(--tinta)',
-                    boxShadow: on ? 'var(--sombra-dura-sm)' : 'none',
+                    border: 'none',
+                    borderRadius: 999,
+                    background: on ? 'var(--sello)' : 'var(--hueco)',
+                    color: on ? 'var(--sello-ink)' : 'var(--tinta)',
                     cursor: 'pointer',
                     fontWeight: 600,
                     fontSize: '0.85rem',
@@ -392,12 +391,11 @@ export function BloqueForm({
                     onClick={() => setRepetir(id)}
                     aria-pressed={on}
                     style={{
-                      padding: '0.3rem 0.6rem',
-                      border: 'var(--borde)',
-                      borderRadius: 'var(--radio)',
-                      background: on ? 'var(--tinta)' : 'var(--papel)',
+                      padding: '0.3rem 0.7rem',
+                      border: 'none',
+                      borderRadius: 999,
+                      background: on ? 'var(--tinta)' : 'var(--hueco)',
                       color: on ? 'var(--papel)' : 'var(--tinta)',
-                      boxShadow: on ? 'var(--sombra-dura-sm)' : 'none',
                       cursor: 'pointer',
                       fontWeight: 600,
                       fontSize: '0.85rem',
@@ -424,10 +422,10 @@ export function BloqueForm({
                       style={{
                         width: 34,
                         height: 34,
-                        border: 'var(--borde)',
-                        borderRadius: 'var(--radio)',
-                        background: on ? 'var(--sello)' : 'var(--papel)',
-                        color: on ? '#fff' : 'var(--tinta)',
+                        border: 'none',
+                        borderRadius: 9,
+                        background: on ? 'var(--sello)' : 'var(--hueco)',
+                        color: on ? 'var(--sello-ink)' : 'var(--tinta)',
                         cursor: 'pointer',
                         fontWeight: 700,
                       }}
@@ -472,9 +470,8 @@ export function BloqueForm({
           type="button"
           onClick={onCancel}
           disabled={busy}
-          className="btn"
-          style={{ background: 'var(--papel)', color: 'var(--tinta)' }}
-        >
+          className="btn btn--sec"
+          >
           <X size={16} aria-hidden />
           Cancelar
         </button>

@@ -35,8 +35,10 @@ export function TareaMini({
 
   const iconBtn = (activo: boolean): React.CSSProperties => ({
     padding: '0.25rem 0.3rem',
-    background: activo ? 'var(--sello)' : 'var(--papel)',
-    color: activo ? '#fff' : 'var(--tinta)',
+    background: activo ? 'var(--sello)' : 'var(--hueco)',
+    color: activo ? 'var(--sello-ink)' : 'var(--tinta)',
+    border: 'none',
+    borderRadius: 7,
   })
 
   return (
@@ -76,9 +78,9 @@ export function TareaMini({
               title="Dentro del Top 12"
               style={{
                 background: 'var(--sello)',
-                color: '#fff',
+                color: 'var(--sello-ink)',
                 padding: '0 0.3rem',
-                borderRadius: 3,
+                borderRadius: 5,
                 fontSize: '0.7rem',
               }}
             >
@@ -160,20 +162,20 @@ export function TareaMini({
       </button>
       <button
         type="button"
-        className="btn"
+        className="btn btn--icono"
         onClick={onEdit}
         title="Editar"
-        style={{ padding: '0.25rem 0.3rem', background: 'var(--papel)', color: 'var(--tinta)' }}
+        style={{ padding: '0.25rem 0.3rem' }}
       >
         <Pencil size={14} aria-hidden />
       </button>
       <button
         type="button"
-        className="btn"
+        className="btn btn--icono"
         onClick={onDelete}
         disabled={busy}
         title="Borrar"
-        style={{ padding: '0.25rem 0.3rem', background: 'var(--papel)', color: 'var(--tinta)' }}
+        style={{ padding: '0.25rem 0.3rem' }}
       >
         <Trash2 size={14} aria-hidden />
       </button>

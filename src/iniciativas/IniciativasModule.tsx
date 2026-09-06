@@ -147,7 +147,7 @@ export function IniciativasModule() {
           marginBottom: '1rem',
         }}
       >
-        <h1 style={{ fontSize: 'clamp(1.8rem, 6vw, 2.6rem)' }}>
+        <h1 style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)' }}>
           Iniciativas{' '}
           <span className="mono-tag" style={{ opacity: 0.6 }}>
             {items.length}
@@ -157,12 +157,11 @@ export function IniciativasModule() {
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
             <button
               type="button"
-              className="btn"
+              className="btn btn--sec"
               onClick={handleSeed}
               disabled={busy}
               title="Crear las iniciativas por área que falten"
-              style={{ background: 'var(--papel)', color: 'var(--tinta)' }}
-            >
+              >
               <Sparkles size={16} aria-hidden />
               Sugeridas
             </button>
@@ -220,7 +219,7 @@ export function IniciativasModule() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                     <strong style={{ fontSize: '1.05rem' }}>{ini.nombre}</strong>
                     {!ini.activa && (
-                      <span className="sello-goma" style={{ fontSize: '0.7rem', padding: '0.05em 0.4em' }}>
+                      <span className="chip">
                         Hecho
                       </span>
                     )}
@@ -263,30 +262,30 @@ export function IniciativasModule() {
                 <div style={{ display: 'flex', gap: '0.4rem' }}>
                   <button
                     type="button"
-                    className="btn"
+                    className="btn btn--icono"
                     onClick={() => handleFinalizar(ini)}
                     disabled={busy}
                     title={ini.activa ? 'Finalizar' : 'Reabrir'}
-                    style={{ padding: '0.3rem 0.4rem', background: 'var(--papel)', color: 'var(--tinta)' }}
+                    style={{ padding: '0.3rem 0.4rem' }}
                   >
                     {ini.activa ? <Check size={15} aria-hidden /> : <RotateCcw size={15} aria-hidden />}
                   </button>
                   <button
                     type="button"
-                    className="btn"
+                    className="btn btn--icono"
                     onClick={() => setForm({ open: true, editing: ini })}
                     title="Editar"
-                    style={{ padding: '0.3rem 0.4rem', background: 'var(--papel)', color: 'var(--tinta)' }}
+                    style={{ padding: '0.3rem 0.4rem' }}
                   >
                     <Pencil size={15} aria-hidden />
                   </button>
                   <button
                     type="button"
-                    className="btn"
+                    className="btn btn--icono"
                     onClick={() => handleDelete(ini)}
                     disabled={busy}
                     title="Borrar"
-                    style={{ padding: '0.3rem 0.4rem', background: 'var(--papel)', color: 'var(--tinta)' }}
+                    style={{ padding: '0.3rem 0.4rem' }}
                   >
                     <Trash2 size={15} aria-hidden />
                   </button>

@@ -37,24 +37,30 @@ import { listIniciativas } from '../data/iniciativas'
 import { listTareaAreas, listTareasResumen, type TareaResumen } from '../data/tareas'
 import { listRevisiones } from '../data/revisiones'
 
-const TINTA = '#181818'
-const ROJO = '#FB4D3D'
-const TEAL = '#2AA9B5'
-const MANILA = '#C77D3A'
+// Recharts pinta atributos SVG de presentación, y var() se resuelve ahí igual
+// que en CSS: las gráficas cambian con el tema sin re-renderizar nada.
+const TINTA = 'var(--tinta)'
+const ROJO = 'var(--rojo)'
+const TEAL = 'var(--teal)'
+const MANILA = 'var(--manila)'
+const REJILLA = 'var(--borde2)'
 const SEMANAS = 8
 
 const RAG_COLOR: Record<EstadoRag, string> = {
-  rojo: '#FB4D3D',
-  ambar: '#FFC53D',
-  verde: '#2ECC71',
+  rojo: 'var(--rojo)',
+  ambar: 'var(--ambar)',
+  verde: 'var(--verde)',
 }
 
-const ejeTick = { fontSize: 11, fill: TINTA, fontFamily: "'IBM Plex Mono', monospace" }
+const ejeTick = { fontSize: 11, fill: TINTA, fontFamily: 'var(--font-mono)' }
+const leyenda = { fontFamily: 'var(--font-mono)', fontSize: 12 }
 const tooltipStyle = {
-  background: '#EFEDE4',
-  border: '2px solid #181818',
-  borderRadius: 4,
-  fontFamily: "'IBM Plex Mono', monospace",
+  background: 'var(--sup)',
+  color: 'var(--tinta)',
+  border: '1px solid var(--borde)',
+  borderRadius: 10,
+  boxShadow: 'var(--sombra)',
+  fontFamily: 'var(--font-mono)',
   fontSize: 12,
 }
 
@@ -67,7 +73,7 @@ const SUBTABS: { id: Subvista; label: string }[] = [
 
 function Tarjeta({ titulo, children }: { titulo: string; children: React.ReactNode }) {
   return (
-    <div className="card" style={{ padding: '1rem', marginBottom: '1.25rem' }}>
+    <div className="card" style={{ padding: '1rem' }}>
       <p className="mono-tag" style={{ color: 'var(--sello)', marginBottom: '0.8rem' }}>
         {titulo}
       </p>
@@ -137,7 +143,7 @@ export function DashboardModule() {
     <Tarjeta titulo={`Horas de trabajo por semana · techo ${TECHO_HORAS} h`}>
       <ResponsiveContainer width="100%" height={220}>
         <BarChart data={serie} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#D8D5C9" vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke={REJILLA} vertical={false} />
           <XAxis dataKey="label" tick={ejeTick} stroke={TINTA} />
           <YAxis tick={ejeTick} stroke={TINTA} />
           <Tooltip contentStyle={tooltipStyle} formatter={(v) => [`${v} h`, 'Trabajo']} />
@@ -156,11 +162,11 @@ export function DashboardModule() {
     <Tarjeta titulo="Trabajo profundo vs. reactivo">
       <ResponsiveContainer width="100%" height={220}>
         <BarChart data={serie} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#D8D5C9" vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke={REJILLA} vertical={false} />
           <XAxis dataKey="label" tick={ejeTick} stroke={TINTA} />
           <YAxis tick={ejeTick} stroke={TINTA} />
           <Tooltip contentStyle={tooltipStyle} formatter={(v, n) => [`${v} h`, n]} />
-          <Legend wrapperStyle={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 12 }} />
+          <Legend wrapperStyle={leyenda} />
           <Bar dataKey="profundoH" stackId="t" fill={TEAL} name="Profundo" radius={[0, 0, 0, 0]} />
           <Bar dataKey="reactivoH" stackId="t" fill={MANILA} name="Reactivo" radius={[3, 3, 0, 0]} />
         </BarChart>
@@ -175,7 +181,7 @@ export function DashboardModule() {
       ) : (
         <ResponsiveContainer width="100%" height={Math.max(140, balance.length * 42)}>
           <BarChart data={balance} layout="vertical" margin={{ top: 4, right: 12, left: 8, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#D8D5C9" horizontal={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke={REJILLA} horizontal={false} />
             <XAxis type="number" tick={ejeTick} stroke={TINTA} />
             <YAxis type="category" dataKey="nombre" tick={ejeTick} stroke={TINTA} width={84} />
             <Tooltip contentStyle={tooltipStyle} formatter={(v) => [`${v} h`, 'Tiempo']} />
@@ -200,17 +206,16 @@ export function DashboardModule() {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.4rem',
-              padding: '0.3rem 0.6rem',
-              border: 'var(--borde)',
-              borderRadius: 'var(--radio)',
+              padding: '0.4rem 0.7rem',
+              borderRadius: 10,
+              background: 'var(--suave)',
             }}
           >
             <span
               style={{
-                width: 14,
-                height: 14,
-                borderRadius: 3,
-                border: '2px solid var(--tinta)',
+                width: 13,
+                height: 13,
+                borderRadius: 4,
                 background: RAG_COLOR[r],
               }}
             />
@@ -231,7 +236,7 @@ export function DashboardModule() {
       ) : (
         <ResponsiveContainer width="100%" height={Math.max(140, iniBalance.length * 42)}>
           <BarChart data={iniBalance} layout="vertical" margin={{ top: 4, right: 12, left: 8, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#D8D5C9" horizontal={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke={REJILLA} horizontal={false} />
             <XAxis type="number" tick={ejeTick} stroke={TINTA} />
             <YAxis type="category" dataKey="nombre" tick={ejeTick} stroke={TINTA} width={84} />
             <Tooltip contentStyle={tooltipStyle} formatter={(v) => [`${v} h`, 'Tiempo']} />
@@ -253,13 +258,13 @@ export function DashboardModule() {
       ) : (
         <ResponsiveContainer width="100%" height={Math.max(140, tareasIni.length * 42)}>
           <BarChart data={tareasIni} layout="vertical" margin={{ top: 4, right: 12, left: 8, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#D8D5C9" horizontal={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke={REJILLA} horizontal={false} />
             <XAxis type="number" allowDecimals={false} tick={ejeTick} stroke={TINTA} />
             <YAxis type="category" dataKey="nombre" tick={ejeTick} stroke={TINTA} width={84} />
             <Tooltip contentStyle={tooltipStyle} />
-            <Legend wrapperStyle={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 12 }} />
+            <Legend wrapperStyle={leyenda} />
             <Bar dataKey="hechas" stackId="t" fill={RAG_COLOR.verde} name="Hechas" radius={[0, 0, 0, 0]} />
-            <Bar dataKey="pendientes" stackId="t" fill={TINTA} name="Pendientes" radius={[0, 3, 3, 0]} />
+            <Bar dataKey="pendientes" stackId="t" fill="var(--pizarra)" name="Pendientes" radius={[0, 3, 3, 0]} />
           </BarChart>
         </ResponsiveContainer>
       )}
@@ -275,11 +280,11 @@ export function DashboardModule() {
       ) : (
         <ResponsiveContainer width="100%" height={Math.max(160, cruce.filas.length * 46)}>
           <BarChart data={cruce.filas} layout="vertical" margin={{ top: 4, right: 12, left: 8, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#D8D5C9" horizontal={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke={REJILLA} horizontal={false} />
             <XAxis type="number" tick={ejeTick} stroke={TINTA} />
             <YAxis type="category" dataKey="nombre" tick={ejeTick} stroke={TINTA} width={84} />
             <Tooltip contentStyle={tooltipStyle} formatter={(v, n) => [`${v} h`, n]} />
-            <Legend wrapperStyle={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11 }} />
+            <Legend wrapperStyle={{ ...leyenda, fontSize: 11 }} />
             {cruce.areas.map((a, i) => (
               <Bar
                 key={a.nombre}
@@ -302,7 +307,7 @@ export function DashboardModule() {
       ) : (
         <>
           <p style={{ marginBottom: '0.6rem' }}>
-            <strong style={{ fontFamily: 'var(--font-display)', fontSize: '1.6rem' }}>
+            <strong style={{ fontSize: '1.6rem', letterSpacing: '-0.03em' }}>
               {avance.hechas}/{avance.total}
             </strong>{' '}
             <span className="mono-tag" style={{ opacity: 0.7 }}>hechas</span>
@@ -310,10 +315,9 @@ export function DashboardModule() {
           <div
             style={{
               height: 16,
-              border: 'var(--borde)',
-              borderRadius: 'var(--radio)',
+              borderRadius: 8,
               overflow: 'hidden',
-              background: 'var(--papel-hueco)',
+              background: 'var(--suave)',
             }}
           >
             <div
@@ -343,9 +347,8 @@ export function DashboardModule() {
                 style={{
                   width: 34,
                   height: 34,
-                  borderRadius: 'var(--radio)',
-                  border: 'var(--borde)',
-                  background: s.rag ? RAG_COLOR[s.rag] : 'var(--papel-hueco)',
+                  borderRadius: 10,
+                  background: s.rag ? RAG_COLOR[s.rag] : 'var(--suave)',
                 }}
               />
               <span className="mono-tag" style={{ fontSize: '0.62rem', opacity: 0.6 }}>{s.label}</span>
@@ -357,13 +360,13 @@ export function DashboardModule() {
   )
 
   return (
-    <section>
-      <h1 style={{ fontSize: 'clamp(1.8rem, 6vw, 2.6rem)', marginBottom: '1rem' }}>Panel</h1>
+    <section style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
+      <h1 style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)' }}>Panel</h1>
 
       {error && (
         <p
           className="card"
-          style={{ padding: '0.75rem 1rem', color: 'var(--rag-rojo)', fontWeight: 600, marginBottom: '1rem' }}
+          style={{ padding: '0.75rem 1rem', color: 'var(--rojo)', fontWeight: 600 }}
         >
           {error}
         </p>
@@ -381,52 +384,39 @@ export function DashboardModule() {
         </div>
       ) : (
         <>
-          <nav style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
-            {SUBTABS.map((t) => {
-              const activo = sub === t.id
-              return (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => setSub(t.id)}
-                  aria-pressed={activo}
-                  style={{
-                    padding: '0.4rem 0.85rem',
-                    fontWeight: 600,
-                    border: 'var(--borde)',
-                    borderRadius: 'var(--radio)',
-                    background: activo ? 'var(--tinta)' : 'var(--papel)',
-                    color: activo ? 'var(--papel)' : 'var(--tinta)',
-                    boxShadow: activo ? 'var(--sombra-dura-sm)' : 'none',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {t.label}
-                </button>
-              )
-            })}
+          <nav className="pills" style={{ alignSelf: 'flex-start' }}>
+            {SUBTABS.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setSub(t.id)}
+                aria-pressed={sub === t.id}
+              >
+                {t.label}
+              </button>
+            ))}
           </nav>
 
           {sub === 'tiempo' && (
-            <>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
               {cardHoras}
               {cardProfundo}
               {cardBalanceArea}
-            </>
+            </div>
           )}
           {sub === 'iniciativas' && (
-            <>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
               {cardRagTally}
               {cardTiempoIni}
               {cardTareasIni}
               {cardCruce}
-            </>
+            </div>
           )}
           {sub === 'avance' && (
-            <>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
               {cardAvance}
               {cardRagPersonal}
-            </>
+            </div>
           )}
         </>
       )}

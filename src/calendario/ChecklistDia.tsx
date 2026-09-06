@@ -75,11 +75,11 @@ export function ChecklistDia({
               )}
               <button
                 type="button"
-                className="btn"
+                className="btn btn--icono"
                 onClick={() => onQuitar(t)}
                 disabled={busy}
                 title="Sacar del día"
-                style={{ padding: '0.25rem 0.3rem', background: 'var(--papel)', color: 'var(--tinta)' }}
+                style={{ padding: '0.25rem 0.3rem' }}
               >
                 <CalendarX size={14} aria-hidden />
               </button>

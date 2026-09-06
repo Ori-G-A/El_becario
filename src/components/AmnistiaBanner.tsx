@@ -72,10 +72,9 @@ export function AmnistiaBanner() {
             </button>
             <button
               type="button"
-              className="btn"
+              className="btn btn--sec"
               onClick={() => setEstado('oculto')}
               disabled={estado === 'limpiando'}
-              style={{ background: 'var(--papel)', color: 'var(--tinta)' }}
             >
               Déjalo como está
             </button>

@@ -36,16 +36,16 @@ export function AlertasBanner() {
     alignItems: 'flex-start',
     gap: '0.6rem',
     padding: '0.7rem 0.9rem',
-    border: 'var(--borde)',
+    border: '1px solid var(--borde)',
     borderRadius: 'var(--radio)',
-    boxShadow: 'var(--sombra-dura-sm)',
+    boxShadow: 'var(--sombra)',
     marginBottom: '0.6rem',
   }
 
   return (
     <div style={{ marginBottom: '0.5rem' }}>
       {mostrarBurnout && (
-        <div style={{ ...notaBase, background: 'var(--papel)', borderLeft: '6px solid var(--rag-rojo)' }}>
+        <div style={{ ...notaBase, background: 'var(--sup)', borderLeft: '4px solid var(--rojo)' }}>
           <BatteryWarning size={18} aria-hidden style={{ flexShrink: 0, marginTop: 2 }} />
           <div style={{ flex: 1 }}>
             <strong>{alertas.burnoutRojos} métricas en rojo esta semana.</strong>{' '}
@@ -63,7 +63,7 @@ export function AlertasBanner() {
       )}
 
       {avisos.map((a) => (
-        <div key={a.id} style={{ ...notaBase, background: 'var(--papel)' }}>
+        <div key={a.id} style={{ ...notaBase, background: 'var(--sup)' }}>
           <Bell size={18} aria-hidden style={{ flexShrink: 0, marginTop: 2 }} />
           <div style={{ flex: 1 }}>
             Ojo: <strong>{a.titulo}</strong> {faltaTexto(a.minutosFalta)}. No me hagas

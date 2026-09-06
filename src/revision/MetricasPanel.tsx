@@ -23,10 +23,9 @@ function RagDot({ rag }: { rag: EstadoRag | null }) {
     <span
       aria-label={rag}
       style={{
-        width: 16,
-        height: 16,
-        borderRadius: 3,
-        border: '2px solid var(--tinta)',
+        width: 14,
+        height: 14,
+        borderRadius: 4,
         background: `var(${RAG_VAR[rag]})`,
         flexShrink: 0,
       }}
@@ -118,7 +117,7 @@ export function MetricasPanel({
           gap: '0.6rem',
           marginTop: '0.9rem',
           paddingTop: '0.9rem',
-          borderTop: '1px solid var(--papel-hueco)',
+          borderTop: '1px solid var(--linea)',
           flexWrap: 'wrap',
         }}
       >
@@ -129,9 +128,8 @@ export function MetricasPanel({
         {sugerido && (
           <button
             type="button"
-            className="btn"
+            className="btn btn--sec"
             onClick={() => onUsarSugerido(sugerido)}
-            style={{ background: 'var(--papel)', color: 'var(--tinta)' }}
           >
             <Wand2 size={15} aria-hidden />
             Usar este

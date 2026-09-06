@@ -35,11 +35,12 @@ export function RagSelector({
               fontFamily: 'var(--font-mono)',
               fontWeight: 600,
               background: `var(${op.varName})`,
-              color: 'var(--tinta)',
-              border: activo ? '3px solid var(--tinta)' : '2px solid var(--tinta)',
-              borderRadius: 'var(--radio)',
-              boxShadow: activo ? 'var(--sombra-dura-sm)' : 'none',
-              opacity: activo ? 1 : 0.45,
+              color: '#26262a',
+              border: 'none',
+              borderRadius: 9,
+              outline: activo ? '2px solid var(--tinta)' : 'none',
+              outlineOffset: 2,
+              opacity: activo ? 1 : 0.35,
               cursor: disabled ? 'default' : 'pointer',
             }}
           >

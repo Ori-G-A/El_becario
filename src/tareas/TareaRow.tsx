@@ -43,9 +43,11 @@ export function TareaRow({
   }
 
   const iconBtn: React.CSSProperties = {
-    padding: '0.3rem 0.4rem',
-    background: 'var(--papel)',
+    padding: '0.3rem 0.36rem',
+    background: 'var(--hueco)',
     color: 'var(--tinta)',
+    border: 'none',
+    borderRadius: 8,
   }
 
   return (
@@ -151,9 +153,9 @@ export function TareaRow({
         aria-pressed={isTopGoal}
         title={isTopGoal ? 'Quitar de Top Goal' : 'Marcar como Top Goal de hoy'}
         style={{
-          padding: '0.3rem 0.4rem',
-          background: isTopGoal ? 'var(--sello)' : 'var(--papel)',
-          color: isTopGoal ? '#fff' : 'var(--tinta)',
+          ...iconBtn,
+          background: isTopGoal ? 'var(--sello)' : 'var(--hueco)',
+          color: isTopGoal ? 'var(--sello-ink)' : 'var(--tinta)',
         }}
       >
         <Target size={15} aria-hidden />

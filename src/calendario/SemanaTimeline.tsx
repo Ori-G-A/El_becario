@@ -48,8 +48,8 @@ export function SemanaTimeline({
             display: 'flex',
             position: 'sticky',
             top: 0,
-            background: 'var(--papel)',
-            borderBottom: 'var(--borde)',
+            background: 'var(--sup)',
+            borderBottom: '1px solid var(--borde)',
             zIndex: 2,
           }}
         >
@@ -68,7 +68,7 @@ export function SemanaTimeline({
                   padding: '0.35rem 0.2rem',
                   background: esHoy ? 'var(--tinta)' : 'transparent',
                   color: esHoy ? 'var(--papel)' : 'var(--tinta)',
-                  borderLeft: '1px solid var(--papel-hueco)',
+                  borderLeft: '1px solid var(--linea)',
                 }}
               >
                 <div className="mono-tag" style={{ textTransform: 'capitalize', opacity: esHoy ? 1 : 0.7 }}>
@@ -116,7 +116,7 @@ export function SemanaTimeline({
                   flex: 1,
                   minWidth: DIA_MIN,
                   position: 'relative',
-                  borderLeft: '1px solid var(--papel-hueco)',
+                  borderLeft: '1px solid var(--linea)',
                   cursor: 'copy',
                 }}
               >
@@ -128,7 +128,7 @@ export function SemanaTimeline({
                       top: (h - HORA_INICIO) * ALTO_HORA,
                       left: 0,
                       right: 0,
-                      borderTop: '1px solid var(--papel-hueco)',
+                      borderTop: '1px solid var(--linea)',
                     }}
                   />
                 ))}
@@ -155,11 +155,12 @@ export function SemanaTimeline({
                         overflow: 'hidden',
                         textAlign: 'left',
                         padding: '0.1rem 0.25rem',
-                        borderRadius: 3,
-                        border: '2px solid var(--tinta)',
-                        borderLeft: `4px solid ${cfg.color}`,
-                        background: completado ? 'var(--papel-hueco)' : 'var(--papel)',
-                        boxShadow: b.protegido ? 'var(--sombra-dura-sm)' : 'none',
+                        borderRadius: 7,
+                        border: 'none',
+                        borderLeft: `3px solid ${cfg.color}`,
+                        background: completado ? 'var(--hueco)' : 'var(--suave)',
+                        color: 'var(--tinta)',
+                        boxShadow: b.protegido ? '0 1px 4px rgba(0, 0, 0, 0.08)' : 'none',
                         cursor: 'pointer',
                         lineHeight: 1.1,
                         opacity: b.no_cumplido ? 0.55 : 1,

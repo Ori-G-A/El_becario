@@ -78,7 +78,7 @@ export function RevisionModule() {
 
   return (
     <section>
-      <h1 style={{ fontSize: 'clamp(1.8rem, 6vw, 2.6rem)', marginBottom: '0.3rem' }}>
+      <h1 style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)', marginBottom: '0.3rem' }}>
         Revisión
       </h1>
       <div
@@ -105,9 +105,8 @@ export function RevisionModule() {
         {semana !== mondayISO() && (
           <button
             type="button"
-            className="btn"
+            className="btn btn--sec"
             onClick={() => setSemana(mondayISO())}
-            style={{ background: 'var(--papel)', color: 'var(--tinta)' }}
           >
             Esta semana
           </button>

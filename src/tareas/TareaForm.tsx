@@ -42,13 +42,12 @@ function EjeSiNo({
               aria-pressed={on}
               style={{
                 flex: 1,
-                padding: '0.4rem 0.6rem',
+                padding: '0.42rem 0.6rem',
                 fontWeight: 600,
-                border: 'var(--borde)',
-                borderRadius: 'var(--radio)',
-                background: on ? 'var(--tinta)' : 'var(--papel)',
+                border: 'none',
+                borderRadius: 999,
+                background: on ? 'var(--tinta)' : 'var(--hueco)',
                 color: on ? 'var(--papel)' : 'var(--tinta)',
-                boxShadow: on ? 'var(--sombra-dura-sm)' : 'none',
                 cursor: 'pointer',
               }}
             >
@@ -199,9 +198,9 @@ export function TareaForm({
           alignItems: 'center',
           gap: '0.4rem',
           marginBottom: '0.9rem',
-          padding: '0.2rem 0.5rem',
-          border: `2px solid ${meta.color}`,
-          borderRadius: 'var(--radio)',
+          padding: '0.25rem 0.55rem',
+          border: `1px solid ${meta.color}`,
+          borderRadius: 999,
         }}
       >
         <span style={{ width: 9, height: 9, borderRadius: '50%', background: meta.color }} />
@@ -227,12 +226,11 @@ export function TareaForm({
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '0.35rem',
-                  padding: '0.3rem 0.6rem',
-                  border: 'var(--borde)',
-                  borderRadius: 'var(--radio)',
-                  background: on ? area.color : 'var(--papel)',
+                  padding: '0.3rem 0.7rem',
+                  border: 'none',
+                  borderRadius: 999,
+                  background: on ? area.color : 'var(--hueco)',
                   color: on ? '#fff' : 'var(--tinta)',
-                  boxShadow: on ? 'var(--sombra-dura-sm)' : 'none',
                   cursor: 'pointer',
                   fontWeight: 600,
                   fontSize: '0.85rem',
@@ -314,11 +312,10 @@ export function TareaForm({
                     aria-pressed={on}
                     style={{
                       padding: '0.3rem 0.6rem',
-                      border: 'var(--borde)',
-                      borderRadius: 'var(--radio)',
-                      background: on ? 'var(--sello)' : 'var(--papel)',
-                      color: on ? '#fff' : 'var(--tinta)',
-                      boxShadow: on ? 'var(--sombra-dura-sm)' : 'none',
+                      border: 'none',
+                      borderRadius: 999,
+                      background: on ? 'var(--sello)' : 'var(--hueco)',
+                      color: on ? 'var(--sello-ink)' : 'var(--tinta)',
                       cursor: 'pointer',
                       fontWeight: 600,
                       fontSize: '0.85rem',
@@ -380,9 +377,8 @@ export function TareaForm({
           type="button"
           onClick={onCancel}
           disabled={busy}
-          className="btn"
-          style={{ background: 'var(--papel)', color: 'var(--tinta)' }}
-        >
+          className="btn btn--sec"
+          >
           <X size={16} aria-hidden />
           Cancelar
         </button>

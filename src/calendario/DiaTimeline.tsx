@@ -99,10 +99,14 @@ export function DiaTimeline({
           const top = (h - HORA_INICIO) * ALTO_HORA
           return (
             <div key={h} style={{ position: 'absolute', top, left: 0, right: 0 }}>
-              <span className="mono-tag" style={{ position: 'absolute', top: -7, left: 8, opacity: 0.5 }}>
+              {/* La de las 00:00 no cabe por encima del borde de la tarjeta. */}
+              <span
+                className="mono-tag"
+                style={{ position: 'absolute', top: h === HORA_INICIO ? 2 : -7, left: 8, opacity: 0.5 }}
+              >
                 {String(h % 24).padStart(2, '0')}:00
               </span>
-              <div style={{ marginLeft: COL_IZQ, borderTop: '1px solid var(--papel-hueco)' }} />
+              <div style={{ marginLeft: COL_IZQ, borderTop: '1px solid var(--linea)' }} />
             </div>
           )
         })}
@@ -138,12 +142,14 @@ export function DiaTimeline({
               height: alto,
               overflow: 'hidden',
               textAlign: 'left',
-              padding: '0.2rem 0.4rem',
-              borderRadius: 'var(--radio)',
-              border: b.protegido ? '2.5px solid var(--tinta)' : '2px solid var(--tinta)',
-              borderLeft: `6px solid ${cfg.color}`,
-              background: completado ? 'var(--papel-hueco)' : 'var(--papel)',
-              boxShadow: arrastrando ? 'var(--sombra-dura-sm)' : b.protegido ? 'var(--sombra-dura-sm)' : 'none',
+              padding: '0.35rem 0.6rem',
+              borderRadius: 10,
+              border: 'none',
+              borderLeft: `4px solid ${cfg.color}`,
+              background: completado ? 'var(--hueco)' : 'var(--suave)',
+              color: 'var(--tinta)',
+              boxShadow:
+                arrastrando || b.protegido ? '0 1px 4px rgba(0, 0, 0, 0.08)' : 'none',
               cursor: arrastrando ? 'grabbing' : 'pointer',
               zIndex: arrastrando ? 2 : undefined,
               opacity: arrastrando ? 0.9 : b.no_cumplido ? 0.55 : 1,
@@ -168,7 +174,7 @@ export function DiaTimeline({
               {b.tipo === 'sueno' && <Moon size={11} aria-hidden />}
             </div>
             {alto > 28 && (
-              <span className="mono-tag" style={{ opacity: 0.6, fontSize: '0.64rem' }}>
+              <span className="mono-tag" style={{ opacity: 0.55, fontSize: '0.63rem', textTransform: 'none' }}>
                 {horaLocal(desplazado(b.inicio))}–{horaLocal(desplazado(b.fin))}
                 {completado ? ' · hecho' : b.no_cumplido ? ' · no cumplido' : ''}
               </span>

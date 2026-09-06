@@ -73,11 +73,11 @@ export function RegistroReal({
             </span>
             <button
               type="button"
-              className="btn"
+              className="btn btn--icono"
               onClick={() => onMarcar(campo, null)}
               disabled={busy}
               title={`Borrar ${etiqueta.toLowerCase()}`}
-              style={{ padding: '0.3rem 0.4rem', background: 'var(--papel)', color: 'var(--tinta)' }}
+              style={{ padding: '0.3rem 0.4rem' }}
             >
               <X size={15} aria-hidden />
             </button>

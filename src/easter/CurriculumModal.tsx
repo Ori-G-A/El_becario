@@ -26,7 +26,7 @@ export function CurriculumModal({ cafes, onClose }: { cafes: number; onClose: ()
       <div
         className="card"
         onClick={(e) => e.stopPropagation()}
-        style={{ maxWidth: 460, width: '100%', padding: '1.5rem', background: 'var(--papel)' }}
+        style={{ maxWidth: 460, width: '100%', padding: '1.5rem', background: 'var(--sup)' }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
@@ -67,7 +67,7 @@ export function CurriculumModal({ cafes, onClose }: { cafes: number; onClose: ()
             alignItems: 'center',
             gap: '0.5rem',
             paddingTop: '0.9rem',
-            borderTop: '1px solid var(--papel-hueco)',
+            borderTop: '1px solid var(--linea)',
           }}
         >
           <Coffee size={16} aria-hidden />

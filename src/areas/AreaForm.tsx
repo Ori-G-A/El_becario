@@ -70,9 +70,11 @@ export function AreaForm({
               width: 32,
               height: 32,
               background: c,
-              border: color === c ? '3px solid var(--tinta)' : '2px solid var(--tinta)',
-              borderRadius: 'var(--radio)',
-              boxShadow: color === c ? 'var(--sombra-dura-sm)' : 'none',
+              border: 'none',
+              borderRadius: 10,
+              outline: color === c ? '2px solid var(--tinta)' : 'none',
+              outlineOffset: 2,
+              opacity: color === c ? 1 : 0.55,
               cursor: 'pointer',
             }}
           />
@@ -93,10 +95,10 @@ export function AreaForm({
               placeItems: 'center',
               width: 38,
               height: 38,
-              background: icono === key ? color : 'var(--papel)',
+              background: icono === key ? color : 'var(--hueco)',
               color: icono === key ? '#fff' : 'var(--tinta)',
-              border: 'var(--borde)',
-              borderRadius: 'var(--radio)',
+              border: 'none',
+              borderRadius: 11,
               cursor: 'pointer',
             }}
           >
@@ -118,9 +120,8 @@ export function AreaForm({
           type="button"
           onClick={onCancel}
           disabled={busy}
-          className="btn"
-          style={{ background: 'var(--papel)', color: 'var(--tinta)' }}
-        >
+          className="btn btn--sec"
+          >
           <X size={16} aria-hidden />
           Cancelar
         </button>
