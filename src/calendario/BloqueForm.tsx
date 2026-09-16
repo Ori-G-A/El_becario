@@ -311,7 +311,12 @@ export function BloqueForm({
         </select>
       </div>
 
-      {iniElegida ? (
+      {tipo === 'sueno' ? (
+        <p className="mono-tag" style={{ opacity: 0.75, margin: '0 0 0.9rem', lineHeight: 1.4 }}>
+          Se clasifica como sueño automáticamente, incluso sin iniciativa ni área.
+          Para indicar cuánto dormiste, completa el inicio y fin del registro real.
+        </p>
+      ) : iniElegida ? (
         <p className="mono-tag" style={{ opacity: 0.75, margin: '0 0 0.9rem', lineHeight: 1.4 }}>
           Le reporta a: {areaElegida?.nombre ?? 'sin área'} · {iniElegida.nombre}
         </p>

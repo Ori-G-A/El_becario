@@ -110,6 +110,22 @@ serie histórica deja de ser comparable y todo lo que amiga concluyó antes se c
 
 ## 5. Los nulos significan algo
 
+**Excepción: sueño.** Un bloque con `tipo = 'sueno'` siempre recibe
+`categoria = 'sueno'`, aunque no tenga tarea, iniciativa ni área. Es válido:
+no descartarlo ni exigirle una iniciativa para contar sus minutos.
+
+Para evaluar descanso, usar solo bloques con `con_registro_real = true` y
+finalizados. Agrupar el sueño por el día de despertar en `America/Bogota`
+y dividir entre los días con registro, **nunca entre siete por defecto**.
+Dos noches registradas de ocho horas son ocho horas de promedio, no 2,3.
+Un día sin registro es desconocido; no equivale a cero horas de sueño.
+Consultar también la noche anterior al inicio de la semana y excluir la que
+termina en la semana siguiente. Los bloques solo planeados siguen siendo plan.
+
+Actualmente `inicio` y `fin` en la vista son los horarios planeados, incluso
+cuando `minutos` usa el registro real. Si el despertar real cambia de fecha
+respecto al plan, la vista no permite determinar ese cambio de día.
+
 | Situación | Qué pasó | Qué debe hacer amiga |
 |---|---|---|
 | `categoria is null` | Bloque de autocuidado suelto, sin tarea ni iniciativa. | **Reportarlo, no descartarlo.** Es tiempo real sin etiquetar. Decir cuántas horas fueron y sugerir engancharlo a una iniciativa permanente (Ejercicio, Comida, Traslado…). |
